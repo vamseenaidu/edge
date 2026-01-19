@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGE API v1.0 Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">CGE API v1.0</p>
+      <h1>Deterministic governance layer for medicine (YC demo)</h1>
+      <p class="lede">One request, one decision. Toggle debug to include the audit trail.</p>
+    </header>
+
+    <section class="input-card">
+      <label class="field-label" for="query">User query</label>
+      <textarea id="query" rows="4" placeholder="Enter a clinical-style query..."></textarea>
+
+      <div class="toggles">
+        <div class="pill pill-muted">Domain: medicine</div>
+        <label class="checkbox">
+          <input type="checkbox" id="debug-toggle">
+          <span>Debug (include audit)</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="run-btn" class="primary">Run CGE</button>
+        <button id="example-chest" class="ghost">Load example: Chest pain</button>
+        <button id="example-dosing" class="ghost">Load example: Dosing</button>
+      </div>
+    </section>
+
+    <section class="panes">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Request</h2>
+        </div>
+        <pre id="request-preview" aria-live="polite"></pre>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Response</h2>
+        </div>
+        <pre id="response-output" aria-live="polite"></pre>
+      </div>
+    </section>
+
+    <p class="status" id="status-line">Status: idle</p>
+
+    <footer>
+      <p>Request API access → <a href="mailto:team@example.com">team@example.com</a></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

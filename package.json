@@ -1,0 +1,33 @@
+{
+  "name": "cge-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test:decision": "CGE_DISABLE_LOG=1 ts-node scripts/runDecisionTable.ts",
+    "test:log": "ts-node scripts/smokeLog.ts",
+    "demo": "ts-node scripts/demoRunner.ts --preset leadership --outDir runs/demo",
+    "demo:debug": "ts-node scripts/demoRunner.ts --preset leadership --outDir runs/demo --debug",
+    "test:demo": "ts-node scripts/smokeDemo.ts",
+    "test:ui": "ts-node scripts/smokeUi.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.27.0",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^25.0.8",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "zod": "^4.3.5"
+  }
+}
