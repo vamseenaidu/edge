@@ -4,6 +4,7 @@ import { requireRole } from "../middleware/rbac_mw";
 import type { RoleRequirement } from "../auth/rbac";
 import { mountHealthRoutes } from "./routes_health";
 import { mountJobRoutes } from "./routes_jobs";
+import { mountPolicyRoutes } from "./routes_policies";
 
 export function createV1Router(): express.Router {
   const router = express.Router();
@@ -13,6 +14,12 @@ export function createV1Router(): express.Router {
 
   const opsAuditAdmin: RoleRequirement = { anyOf: ["operator", "auditor", "platform_admin"] };
   const auditAdmin: RoleRequirement = { anyOf: ["auditor", "platform_admin"] };
+
+  mountPolicyRoutes({
+    get: (path: string, ...handlers: any[]) => {
+      router.get(path, requireRole(auditAdmin), ...handlers);
+    },
+  });
 
   router.get("/metrics", requireRole(opsAuditAdmin), (_req, res) => {
     sendJson(res, ok({}), 200);
