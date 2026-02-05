@@ -14,12 +14,22 @@ export function createV1Router(): express.Router {
 
   const opsAuditAdmin: RoleRequirement = { anyOf: ["operator", "auditor", "platform_admin"] };
   const auditAdmin: RoleRequirement = { anyOf: ["auditor", "platform_admin"] };
+  const adminOnly: RoleRequirement = { anyOf: ["platform_admin"] };
 
-  mountPolicyRoutes({
-    get: (path: string, ...handlers: any[]) => {
-      router.get(path, requireRole(auditAdmin), ...handlers);
+  mountPolicyRoutes(
+    {
+      get: (path: string, ...handlers: any[]) => {
+        router.get(path, ...handlers);
+      },
+      post: (path: string, ...handlers: any[]) => {
+        router.post(path, ...handlers);
+      },
     },
-  });
+    {
+      read: requireRole(auditAdmin),
+      admin: requireRole(adminOnly),
+    },
+  );
 
   router.get("/metrics", requireRole(opsAuditAdmin), (_req, res) => {
     sendJson(res, ok({}), 200);

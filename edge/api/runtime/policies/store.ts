@@ -1,8 +1,9 @@
-import type { PolicyRecord } from "./types";
+import type { PolicyDraftInput, PolicyRecord } from "./types";
 
 const policies: PolicyRecord[] = [
   {
     version: "edge-clinical.v1.0.0",
+    domain: "medicine",
     summary: "Baseline clinical governance rules.",
     text: `version: edge-clinical.v1
 scope:
@@ -15,9 +16,11 @@ rules:
     decision: REFUSE
     reason_code: REFUSE_DOSING
 `,
+    status: "draft",
   },
   {
     version: "edge-clinical.v1.0.1",
+    domain: "medicine",
     summary: "Adds clarify follow-up rule.",
     text: `version: edge-clinical.v1
 scope:
@@ -33,9 +36,11 @@ rules:
     decision: REFUSE
     reason_code: REFUSE_DOSING
 `,
+    status: "draft",
   },
   {
     version: "edge-clinical.v1.1.0",
+    domain: "medicine",
     summary: "Adds family history escalation rule.",
     text: `version: edge-clinical.v1
 scope:
@@ -51,6 +56,7 @@ rules:
     decision: REFUSE
     reason_code: REFUSE_DOSING
 `,
+    status: "published",
   },
 ];
 
@@ -60,4 +66,38 @@ export function listPolicies(): Array<{ version: string; summary: string }> {
 
 export function getPolicy(version: string): PolicyRecord | null {
   return policies.find((policy) => policy.version === version) ?? null;
+}
+
+export function submitDraft(input: PolicyDraftInput): PolicyRecord {
+  const exists = policies.some((policy) => policy.version === input.version);
+  if (exists) {
+    throw new Error("POLICY_VERSION_EXISTS");
+  }
+  const record: PolicyRecord = {
+    version: input.version,
+    domain: input.domain,
+    summary: input.summary,
+    text: input.text,
+    status: "draft",
+  };
+  policies.push(record);
+  return record;
+}
+
+export function publishPolicy(version: string): PolicyRecord | null {
+  const policy = policies.find((item) => item.version === version);
+  if (!policy) return null;
+
+  for (const item of policies) {
+    if (item.domain === policy.domain && item.status === "published" && item.version !== policy.version) {
+      item.status = "draft";
+    }
+  }
+
+  policy.status = "published";
+  return policy;
+}
+
+export function getActivePolicy(domain: string): PolicyRecord | null {
+  return policies.find((policy) => policy.domain === domain && policy.status === "published") ?? null;
 }
