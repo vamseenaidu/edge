@@ -101,3 +101,11 @@ pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/__tests__/au
 Models generate text.
 
 EDGE decides **whether they are allowed to speak**.
+
+---
+
+## Operator Docs
+- docs/onprem_deploy.md
+- docs/config_matrix.md
+- docs/upgrade_guide.md
+- docs/procurement_index.md
