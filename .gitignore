@@ -18,3 +18,10 @@ runs/
 *.log
 .pnpm-store/
 .vscode/
+
+# apps/web (Next.js)
+apps/web/.next/
+apps/web/out/
+apps/web/node_modules/
+apps/web/next-env.d.ts
+apps/web/pnpm-lock.yaml
