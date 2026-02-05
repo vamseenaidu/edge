@@ -1,0 +1,48 @@
+{
+  "health": {
+    "api_version": "v1",
+    "data": {
+      "status": "live"
+    },
+    "kind": "edge.ok"
+  },
+  "jobs": {
+    "create": {
+      "api_version": "v1",
+      "data": {
+        "job_id": "<job_id>",
+        "status": "queued"
+      },
+      "kind": "edge.ok"
+    },
+    "fetch": {
+      "api_version": "v1",
+      "data": {
+        "job": {
+          "actor_id": null,
+          "id": "<job_id>",
+          "kind": "eval_run",
+          "result": {
+            "accepted": true
+          },
+          "status": "completed",
+          "tenant_id": null
+        }
+      },
+      "kind": "edge.ok"
+    }
+  },
+  "tool": {
+    "audit": {
+      "allowed": false,
+      "reason_code": "TOOL_DENY_DEFAULT",
+      "rule_decision": "deny",
+      "tool_name": "tool.sample"
+    },
+    "decision": {
+      "allowed": false,
+      "reason_code": "TOOL_DENY_DEFAULT",
+      "rule_decision": "deny"
+    }
+  }
+}
