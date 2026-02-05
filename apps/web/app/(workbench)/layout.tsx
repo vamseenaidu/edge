@@ -40,7 +40,14 @@ export default function WorkbenchLayout({ children }: { children: ReactNode }) {
             boxShadow: "var(--shadow-soft)",
           }}
         >
-          <div style={{ fontSize: 12, textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "var(--space-3)" }}>
+          <div
+            style={{
+              fontSize: 12,
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              marginBottom: "var(--space-3)",
+            }}
+          >
             Navigation
           </div>
           <nav style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>

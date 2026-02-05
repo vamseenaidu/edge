@@ -9,7 +9,6 @@ export default function PoliciesPage() {
     id: policy.version,
     cells: [
       policy.version,
-      policy.published_at ?? "—",
       policy.summary,
       <Link key={policy.version} href={`/policies/${policy.version}`} style={{ color: "var(--accent)", fontWeight: 600 }}>
         View
@@ -26,11 +25,7 @@ export default function PoliciesPage() {
         </p>
       </div>
 
-      <NotionTable
-        columns={["Version", "Published At", "Summary", "View"]}
-        rows={rows}
-        emptyLabel="No policy versions available"
-      />
+      <NotionTable columns={["Version", "Summary", "View"]} rows={rows} emptyLabel="No policy versions available" />
     </div>
   );
 }

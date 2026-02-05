@@ -1,19 +1,14 @@
-export type PolicySummary = {
+export type MockPolicy = {
   version: string;
-  published_at?: string;
   summary: string;
-};
-
-export type PolicyRecord = PolicySummary & {
   text: string;
 };
 
-const policies: PolicyRecord[] = [
+const policies: MockPolicy[] = [
   {
-    version: "v1.0",
-    published_at: "2026-01-30",
-    summary: "Baseline governance rules for medicine domain.",
-    text: `version: policy.v1
+    version: "edge-clinical.v1.0.0",
+    summary: "Baseline clinical governance rules.",
+    text: `version: edge-clinical.v1
 scope:
   domain: medicine
 rules:
@@ -26,10 +21,9 @@ rules:
 `,
   },
   {
-    version: "v1.1",
-    published_at: "2026-02-02",
-    summary: "Adds clarify follow-up and expands escalation indicators.",
-    text: `version: policy.v1
+    version: "edge-clinical.v1.0.1",
+    summary: "Adds clarify follow-up rule and escalation indicator.",
+    text: `version: edge-clinical.v1
 scope:
   domain: medicine
 rules:
@@ -48,10 +42,9 @@ rules:
 `,
   },
   {
-    version: "v1.2",
-    published_at: "2026-02-05",
-    summary: "Refines clarify rule and adds family history escalation.",
-    text: `version: policy.v1
+    version: "edge-clinical.v1.1.0",
+    summary: "Refines clarify prompt and adds family history escalation.",
+    text: `version: edge-clinical.v1
 scope:
   domain: medicine
 rules:
@@ -75,10 +68,10 @@ rules:
   },
 ];
 
-export function listPolicies(): PolicySummary[] {
-  return policies.map(({ text, ...rest }) => rest);
+export function listPolicies(): MockPolicy[] {
+  return policies;
 }
 
-export function getPolicy(version: string): PolicyRecord | null {
+export function getPolicy(version: string): MockPolicy | null {
   return policies.find((policy) => policy.version === version) ?? null;
 }

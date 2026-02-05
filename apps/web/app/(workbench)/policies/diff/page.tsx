@@ -50,7 +50,12 @@ function DiffContent() {
         </div>
       </div>
 
-      <RulepackDiff fromText={fromPolicy.text} toText={toPolicy.text} />
+      <RulepackDiff
+        fromLabel={fromPolicy.version}
+        toLabel={toPolicy.version}
+        fromText={fromPolicy.text}
+        toText={toPolicy.text}
+      />
     </div>
   );
 }

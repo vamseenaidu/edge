@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPolicy, listPolicies } from "../../../../lib/mockPolicies";
 
@@ -20,12 +19,11 @@ export default function PolicyDetailPage({ params }: { params: { version: string
         <div style={{ fontSize: 12, textTransform: "uppercase", color: "var(--text-muted)" }}>Policy</div>
         <h1 style={{ margin: 0 }}>{policy.version}</h1>
         <div style={{ color: "var(--text-secondary)" }}>{policy.summary}</div>
-        {policy.published_at ? (
-          <div style={{ color: "var(--text-muted)", fontSize: 12 }}>Published: {policy.published_at}</div>
-        ) : null}
       </div>
 
-      <div
+      <form
+        action="/policies/diff"
+        method="get"
         style={{
           border: "1px solid var(--border-subtle)",
           borderRadius: "var(--radius-md)",
@@ -38,27 +36,44 @@ export default function PolicyDetailPage({ params }: { params: { version: string
         }}
       >
         <div style={{ fontSize: 14, fontWeight: 600 }}>Compare</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)" }}>
-          {comparisons.length === 0 ? (
-            <span style={{ color: "var(--text-muted)" }}>No other versions available.</span>
-          ) : (
-            comparisons.map((other) => (
-              <Link
-                key={other.version}
-                href={`/policies/diff?from=${policy.version}&to=${other.version}`}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-subtle)",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                Compare to {other.version}
-              </Link>
-            ))
-          )}
+        <input type="hidden" name="from" value={policy.version} />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-3)", alignItems: "center" }}>
+          <label style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+            Compare to
+            <select
+              name="to"
+              defaultValue={comparisons[0]?.version ?? ""}
+              style={{
+                marginLeft: "var(--space-2)",
+                padding: "6px 8px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--border-subtle)",
+                background: "var(--surface-0)",
+              }}
+            >
+              {comparisons.map((other) => (
+                <option key={other.version} value={other.version}>
+                  {other.version}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="submit"
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--surface-0)",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+            disabled={comparisons.length === 0}
+          >
+            Compare
+          </button>
         </div>
-      </div>
+      </form>
 
       <div
         style={{
@@ -73,10 +88,12 @@ export default function PolicyDetailPage({ params }: { params: { version: string
         <pre
           style={{
             margin: 0,
-            whiteSpace: "pre-wrap",
+            whiteSpace: "pre",
+            overflowX: "auto",
             fontFamily: "ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace",
             fontSize: 13,
             color: "var(--text-secondary)",
+            maxHeight: 420,
           }}
         >
           {policy.text}
