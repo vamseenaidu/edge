@@ -1,117 +1,68 @@
-# EDGE — Epistemic Discipline & Governance Engine
+# EDGE — Deterministic AI Governance Engine
+Pre-generation decision governor that deterministically outputs PROCEED / ASK_CLARIFY / REFUSE / ESCALATE and emits audit artifacts.
 
-**Deterministic inference-time governance for high-stakes AI systems.**
+## What you get
+- Determinism guarantees (same normalized input + policy version => same decision).
+- Audit artifacts with attribution (actor / role / tenant) and traceability.
+- Replayability for historical decisions and audits.
+- Release gates via golden determinism regression suite.
+- Identity / tenancy / RBAC plane (auth-enabled only).
+- Async jobs plane for evaluation runs.
+- Tool governance plane (default deny; no execution).
+- Operator Workbench UI (static export, on-prem hostable).
 
-EDGE is a **pre-generation decision engine** that sits between a prompt and any model output and deterministically decides:
-
-**PROCEED · ASK_CLARIFY · REFUSE · ESCALATE**
-
-before any language is generated.
-
-EDGE is not a model, not a wrapper, and not post-hoc safety filtering. It is a **control layer** for making AI systems *admissible* in regulated and high-risk environments.
-
----
-
-## Why EDGE Exists
-
-Modern LLMs are powerful but unsafe by default in real-world deployments:
-
-- Hallucination under uncertainty
-- Non-reproducibility
-- No audit-grade decision trail
-- Mixed boundaries between advice, execution, and reasoning
-
-Enterprises don’t buy “better answers.” They buy **risk reduction, auditability, and deployment guarantees**.
-
----
-
-## Core Guarantees (Non-Negotiable)
-
-### 1) Determinism
-Same normalized input + same policy version → **same decision, always**.
-
-### 2) Pre-generation control
-EDGE decides **before** any content is produced. If EDGE refuses, nothing is generated.
-
-### 3) Audit-grade artifacts
-A governed decision can emit an audit bundle containing:
-- matched rule IDs
-- ordered evaluation trace
-- final decision state
-- normalized input hash
-- policy version
-- optional attribution (actor / role / tenant)
-
-### 4) Replayability
-A historical decision can be reconstructed deterministically from the same inputs + policy.
-
----
-
-## Domain Strategy
-
-EDGE ships **governance schemas**, not domain content engines.
-
-- **EDGE-Clinical** — governance-first (no dosing, no medical advice)
-- **EDGE-Finance** — fiduciary risk boundaries (schemas only)
-- **EDGE-Legal** — jurisdiction ambiguity + unauthorized practice prevention (schemas only)
-
----
-
-## Repo Layout (infra-first)
-
-- `edge/api/` — HTTP surface, middleware, runtime config
-- `edge/core/` — decision kernel (frozen semantics)
-- `edge/audit/` — audit helpers + fingerprinting primitives
-- `edge/vignettes/` — frozen governance vignette suites (FGVS)
-- `ops/` — docker/k8s/systemd deployment assets
-- `scripts/` — determinism checks, smoke checks, release gates
-- `docs/` — operator, security model, release process
-
----
-
-## Status
-
-### Release: EDGE 2.1 (tag: `edge-2.1`)
-Identity & tenancy plane:
-- identity surface (actor context)
-- tenant propagation
-- RBAC gates (auth-enabled only)
-- audit attribution (actor/role/tenant)
-- operator deployment profiles
-
----
-
-## Quickstart (local)
-
+## Quick demo (3 commands)
 ```bash
 pnpm install
-pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/index.ts
+EDGE_PORT=3001 pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/index.ts
+NEXT_PUBLIC_EDGE_API_BASE=http://localhost:3001 pnpm -C apps/web dev
 ```
+Open:
+- http://localhost:3000/runs
+- http://localhost:3000/policies
 
-## Run tests (fast)
-
+For a static export build instead of dev:
 ```bash
-pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/__tests__/auth_middleware.test.ts
+pnpm -C apps/web run dist
 ```
 
----
+## API surface (minimal)
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/v1/health/live` | Liveness check |
+| `GET /api/v1/health/ready` | Readiness check |
+| `POST /api/v1/jobs` | Submit async eval job |
+| `GET /api/v1/jobs/:id` | Fetch job status/result |
+| `GET /api/v1/jobs/:id/replay` | Deterministic replay envelope |
+| `GET /api/v1/policies` | List policy versions |
+| `GET /api/v1/policies/:version` | Fetch a policy |
+| `POST /api/v1/policies/draft` | Submit draft (admin) |
+| `POST /api/v1/policies/:version/publish` | Publish draft (admin) |
+| `GET /api/v1/policies/active/:domain` | Read active policy |
 
-## Philosophy
+## Determinism contract
+- Same normalized input and same policy version must yield the same decision.
+- Fingerprinted artifacts exclude timestamps, random IDs, and request-local noise.
+- Any nondeterministic fields must be stripped before comparison.
+- Golden regression snapshots enforce these invariants across releases.
 
-Models generate text.
+## Run the determinism suite
+```bash
+pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/__tests__/determinism_regression.test.ts
+```
 
-EDGE decides **whether they are allowed to speak**.
+## On-prem posture
+- No mandatory SaaS or telemetry.
+- Workbench UI is a static export and can be hosted separately.
+- Deployment details: `docs/onprem_deploy.md`
+- Configuration matrix: `docs/config_matrix.md`
 
----
-
-## Operator Docs
-- docs/onprem_deploy.md
-- docs/config_matrix.md
-- docs/upgrade_guide.md
-- docs/procurement_index.md
-
-## Operator & Deployment Docs
-- docs/onprem_deploy.md
-- docs/config_matrix.md
-- docs/upgrade_guide.md
-- docs/procurement_index.md
+## Releases
+| Tag | Meaning |
+|---|---|
+| `edge-2.1` | Identity + tenancy + RBAC + audit attribution |
+| `edge-2.2` | Async jobs API + deterministic worker lifecycle |
+| `edge-2.3` | Tool governance schema + enforcement hooks (default deny) |
+| `edge-2.4` | Operator Workbench UI (static export) |
+| `edge-2.5` | Determinism hardening + security baseline + ops docs |
+| `edge-2.6` | Policy registry lifecycle + Workbench backend wiring |
