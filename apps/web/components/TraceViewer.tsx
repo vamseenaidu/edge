@@ -13,8 +13,8 @@ type ToolAuditEvent = {
 };
 
 type TraceViewerProps = {
-  matchedRules: string[];
-  toolAudit: ToolAuditEvent[];
+  matchedRules?: string[];
+  toolAudit?: ToolAuditEvent[];
 };
 
 const formatList = (items?: string[]) => (items && items.length > 0 ? items.join(", ") : "—");
@@ -30,18 +30,24 @@ const formatAttribution = (attr?: { actor_id: string | null; tenant_id: string |
 };
 
 export function TraceViewer({ matchedRules, toolAudit }: TraceViewerProps) {
-  const toolRows = toolAudit.map((event) => ({
-    id: `${event.tool_name}-${event.reason_code}`,
-    cells: [
-      event.tool_name,
-      event.rule_decision,
-      event.allowed ? "yes" : "no",
-      event.reason_code,
-      `${formatList(event.required_preconditions)} (${formatMet(event.preconditions_met)})`,
-      `${formatList(event.required_postconditions)} (${formatMet(event.postconditions_met)})`,
-      formatAttribution(event.attribution),
-    ],
-  }));
+  const safeRules = matchedRules ?? [];
+  const safeAudit = toolAudit ?? [];
+  const toolRows = safeAudit.map((event, index) => {
+    const toolName = event.tool_name || "Unknown tool";
+    const reasonCode = event.reason_code || "UNKNOWN";
+    return {
+      id: `${toolName}-${reasonCode}-${index}`,
+      cells: [
+        toolName,
+        event.rule_decision ?? "deny",
+        event.allowed ? "yes" : "no",
+        reasonCode,
+        `${formatList(event.required_preconditions)} (${formatMet(event.preconditions_met)})`,
+        `${formatList(event.required_postconditions)} (${formatMet(event.postconditions_met)})`,
+        formatAttribution(event.attribution),
+      ],
+    };
+  });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
@@ -55,12 +61,12 @@ export function TraceViewer({ matchedRules, toolAudit }: TraceViewerProps) {
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: "var(--space-2)" }}>Matched Rules</div>
-        {matchedRules.length === 0 ? (
+        {safeRules.length === 0 ? (
           <div style={{ color: "var(--text-muted)" }}>No matched rules.</div>
         ) : (
           <ul style={{ margin: 0, paddingLeft: "var(--space-4)", color: "var(--text-secondary)" }}>
-            {matchedRules.map((rule) => (
-              <li key={rule} style={{ marginBottom: "var(--space-1)" }}>
+            {safeRules.map((rule, index) => (
+              <li key={`${rule}-${index}`} style={{ marginBottom: "var(--space-1)" }}>
                 {rule}
               </li>
             ))}

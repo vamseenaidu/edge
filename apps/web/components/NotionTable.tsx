@@ -12,6 +12,8 @@ type NotionTableProps = {
 };
 
 export function NotionTable({ columns, rows, emptyLabel }: NotionTableProps) {
+  const tableLabel = columns.length > 0 ? columns.join(", ") : "Data table";
+
   return (
     <div
       style={{
@@ -22,12 +24,12 @@ export function NotionTable({ columns, rows, emptyLabel }: NotionTableProps) {
         boxShadow: "var(--shadow-soft)",
       }}
     >
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse" }} aria-label={tableLabel}>
         <thead style={{ background: "var(--surface-0)" }}>
           <tr>
-            {columns.map((col) => (
+            {columns.map((col, index) => (
               <th
-                key={col}
+                key={`${col}-${index}`}
                 style={{
                   textAlign: "left",
                   fontSize: 12,
@@ -54,8 +56,8 @@ export function NotionTable({ columns, rows, emptyLabel }: NotionTableProps) {
               </td>
             </tr>
           ) : (
-            rows.map((row) => (
-              <tr key={row.id}>
+            rows.map((row, rowIndex) => (
+              <tr key={`${row.id}-${rowIndex}`}>
                 {row.cells.map((cell, index) => (
                   <td
                     key={`${row.id}-${index}`}

@@ -14,7 +14,8 @@ export function DecisionCard({ decision }: { decision: Decision }) {
   const style = stateStyles[decision.state] ?? { bg: "#f1f5f9", color: "#334155" };
 
   return (
-    <div
+    <section
+      aria-label="Decision"
       style={{
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-md)",
@@ -39,9 +40,12 @@ export function DecisionCard({ decision }: { decision: Decision }) {
         >
           {decision.state}
         </span>
-        <div style={{ fontSize: 16, fontWeight: 600 }}>Decision</div>
+        <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>Decision</h2>
       </div>
-      <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>Reason code: {decision.reason_code}</div>
-    </div>
+      <dl style={{ margin: 0, display: "grid", gap: "var(--space-1)" }}>
+        <dt style={{ fontSize: 12, textTransform: "uppercase", color: "var(--text-muted)" }}>Reason code</dt>
+        <dd style={{ margin: 0, color: "var(--text-secondary)", fontSize: 14 }}>{decision.reason_code}</dd>
+      </dl>
+    </section>
   );
 }

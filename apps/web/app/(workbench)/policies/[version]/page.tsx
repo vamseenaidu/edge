@@ -11,12 +11,18 @@ export default function PolicyDetailPage({ params }: { params: { version: string
 
   if (!policy) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }} role="status">
+        <style>{`
+          .focus-ring:focus-visible {
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+            border-radius: 6px;
+          }
+        `}</style>
         <h1 style={{ margin: 0 }}>Policy not found</h1>
         <p style={{ margin: 0, color: "var(--text-secondary)" }}>
           The requested policy version is not available in this session.
         </p>
-        <Link href="/policies" style={{ color: "var(--accent)", fontWeight: 600 }}>
+        <Link href="/policies" className="focus-ring" style={{ color: "var(--accent)", fontWeight: 600 }}>
           Back to policies
         </Link>
       </div>
@@ -27,6 +33,12 @@ export default function PolicyDetailPage({ params }: { params: { version: string
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+      <style>{`
+        .focus-ring:focus-visible {
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+          border-radius: 6px;
+        }
+      `}</style>
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
         <div style={{ fontSize: 12, textTransform: "uppercase", color: "var(--text-muted)" }}>Policy</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-3)" }}>
@@ -41,6 +53,7 @@ export default function PolicyDetailPage({ params }: { params: { version: string
                 background: "var(--surface-0)",
                 fontWeight: 600,
               }}
+              className="focus-ring"
             >
               Create Draft
             </Link>
@@ -52,6 +65,7 @@ export default function PolicyDetailPage({ params }: { params: { version: string
       <form
         action="/policies/diff"
         method="get"
+        aria-label="Compare policy versions"
         style={{
           border: "1px solid var(--border-subtle)",
           borderRadius: "var(--radius-md)",
@@ -70,6 +84,7 @@ export default function PolicyDetailPage({ params }: { params: { version: string
             Compare to
             <select
               name="to"
+              aria-label="Compare to policy version"
               defaultValue={comparisons[0]?.version ?? ""}
               style={{
                 marginLeft: "var(--space-2)",
@@ -96,6 +111,7 @@ export default function PolicyDetailPage({ params }: { params: { version: string
               fontWeight: 600,
               cursor: "pointer",
             }}
+            className="focus-ring"
             disabled={comparisons.length === 0}
           >
             Compare
