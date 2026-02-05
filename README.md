@@ -109,3 +109,9 @@ EDGE decides **whether they are allowed to speak**.
 - docs/config_matrix.md
 - docs/upgrade_guide.md
 - docs/procurement_index.md
+
+## Operator & Deployment Docs
+- docs/onprem_deploy.md
+- docs/config_matrix.md
+- docs/upgrade_guide.md
+- docs/procurement_index.md

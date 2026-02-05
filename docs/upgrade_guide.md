@@ -3,6 +3,7 @@
 ## Upgrade by Tag
 ```bash
 git fetch --tags
+git pull
 # Choose a release tag, e.g. edge-2.5
 git checkout edge-2.5
 pnpm install
@@ -18,3 +19,7 @@ pnpm exec ts-node --transpile-only --project tsconfig.json \
 ## Backward Compatibility
 - API envelopes are expected to remain stable across minor releases.
 - Additive fields should be optional; removing fields is treated as a breaking change.
+
+## Restart Guidance
+- Rolling restart: update one node at a time; validate health checks before proceeding.
+- Hard restart: stop all nodes, upgrade, then start together (simple, but full downtime).

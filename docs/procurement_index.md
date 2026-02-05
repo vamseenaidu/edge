@@ -15,4 +15,4 @@
 - CI status: <CI status link placeholder>
 
 ## Telemetry
-- Telemetry behavior is not documented here; confirm before deployment.
+- Telemetry model documented separately.
