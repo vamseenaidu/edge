@@ -3,11 +3,13 @@ import { createV1Router } from "../v1/router";
 import { err, sendJson } from "../envelope";
 import { toErrEnvelope } from "../http_errors";
 import { createAuthMiddleware } from "../middleware/auth_mw";
+import { createTenantMiddleware } from "../middleware/tenant_mw";
 import { loadAuthConfig } from "../config/auth";
 
 export type CreateServerOptions = {
   router?: Router;
   authMiddleware?: RequestHandler;
+  tenantMiddleware?: RequestHandler;
   jsonLimit?: string;
 };
 
@@ -17,6 +19,9 @@ export function createServer(options: CreateServerOptions = {}): express.Express
 
   const authMiddleware = options.authMiddleware ?? createAuthMiddleware(loadAuthConfig());
   app.use(authMiddleware);
+
+  const tenantMiddleware = options.tenantMiddleware ?? createTenantMiddleware();
+  app.use(tenantMiddleware);
 
   const router = options.router ?? createV1Router();
   app.use("/api/v1", router);
