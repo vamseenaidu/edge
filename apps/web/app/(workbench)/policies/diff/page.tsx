@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { getPolicy } from "../../../../lib/mockPolicies";
+import { getPolicy, type PolicyRecord } from "../../../../lib/policiesClient";
 import { RulepackDiff } from "../../../../components/RulepackDiff";
 
 function DiffContent() {
@@ -11,10 +11,27 @@ function DiffContent() {
   const from = searchParams.get("from") ?? "";
   const to = searchParams.get("to") ?? "";
 
-  const { fromPolicy, toPolicy } = useMemo(() => {
-    return {
-      fromPolicy: from ? getPolicy(from) : null,
-      toPolicy: to ? getPolicy(to) : null,
+  const [fromPolicy, setFromPolicy] = useState<PolicyRecord | null>(null);
+  const [toPolicy, setToPolicy] = useState<PolicyRecord | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!from || !to) return;
+    let active = true;
+    setLoading(true);
+    setError(null);
+    Promise.all([getPolicy(from), getPolicy(to)]).then(([fromRes, toRes]) => {
+      if (!active) return;
+      setFromPolicy(fromRes.data ?? null);
+      setToPolicy(toRes.data ?? null);
+      if (!fromRes.ok || !toRes.ok) {
+        setError(fromRes.error ?? toRes.error ?? "Unable to load policy versions.");
+      }
+      setLoading(false);
+    });
+    return () => {
+      active = false;
     };
   }, [from, to]);
 
@@ -29,11 +46,17 @@ function DiffContent() {
     );
   }
 
+  if (loading) {
+    return <div style={{ color: "var(--text-muted)" }}>Loading diff…</div>;
+  }
+
   if (!fromPolicy || !toPolicy) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
         <h1 style={{ margin: 0 }}>Policy Diff</h1>
-        <p style={{ color: "var(--text-secondary)" }}>One or more policy versions could not be found.</p>
+        <p style={{ color: "var(--text-secondary)" }}>
+          {error ?? "One or more policy versions could not be found."}
+        </p>
         <Link href="/policies" style={{ color: "var(--accent)", fontWeight: 600 }}>
           Back to policies
         </Link>

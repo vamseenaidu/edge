@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { getPolicy, listPolicies, type MockPolicy } from "../lib/mockPolicies";
+import { useEffect, useMemo, useState } from "react";
+import { getPolicy, listPolicies, type PolicyRecord, type PolicySummary } from "../lib/policiesClient";
+import { RoleGate } from "./RolePill";
 
 type InlineStatusProps = {
   tone: "ok" | "fail" | "draft";
@@ -51,20 +53,56 @@ export function InlineStatus({ tone, label }: InlineStatusProps) {
 
 type PolicyDetailClientProps = {
   version: string;
-  initialPolicy: MockPolicy | null;
+  initialPolicy?: PolicyRecord | null;
 };
 
-export function PolicyDetailClient({ version, initialPolicy }: PolicyDetailClientProps) {
-  const policies = listPolicies();
-  const policy = getPolicy(version) ?? initialPolicy;
+export function PolicyDetailClient({ version, initialPolicy = null }: PolicyDetailClientProps) {
+  const [policy, setPolicy] = useState<PolicyRecord | null>(initialPolicy);
+  const [policies, setPolicies] = useState<PolicySummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    setListError(null);
+    Promise.all([getPolicy(version), listPolicies()]).then(([policyRes, listRes]) => {
+      if (!active) return;
+      if (policyRes.ok) {
+        setPolicy(policyRes.data ?? null);
+      } else {
+        setPolicy(null);
+        setError(policyRes.error ?? "Policy not found.");
+      }
+      if (listRes.ok) {
+        setPolicies(listRes.data ?? []);
+      } else {
+        setPolicies([]);
+        setListError(listRes.error ?? "Unable to load policy list.");
+      }
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [version]);
+
+  const comparisons = useMemo(() => {
+    if (!policy) return [];
+    return policies.filter((item) => item.version !== policy.version);
+  }, [policies, policy]);
+
+  if (loading) {
+    return <div style={{ color: "var(--text-secondary)" }}>Loading policy…</div>;
+  }
 
   if (!policy) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }} role="status">
         <h1 style={{ margin: 0 }}>Policy not found</h1>
-        <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-          The requested policy version is not available in this session.
-        </p>
+        <p style={{ margin: 0, color: "var(--text-secondary)" }}>{error ?? "Policy not found."}</p>
         <Link href="/policies" style={{ color: "var(--accent)", fontWeight: 600 }}>
           Back to policies
         </Link>
@@ -72,26 +110,33 @@ export function PolicyDetailClient({ version, initialPolicy }: PolicyDetailClien
     );
   }
 
-  const comparisons = policies.filter((item) => item.version !== policy.version);
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+      <style>{`
+        .focus-ring:focus-visible {
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+          border-radius: 6px;
+        }
+      `}</style>
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
         <div style={{ fontSize: 12, textTransform: "uppercase", color: "var(--text-muted)" }}>Policy</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-3)" }}>
           <h1 style={{ margin: 0 }}>{policy.version}</h1>
-          <Link
-            href={`/policies/edit?base=${encodeURIComponent(policy.version)}`}
-            style={{
-              padding: "6px 12px",
-              borderRadius: "var(--radius-sm)",
-              border: "1px solid var(--border-subtle)",
-              background: "var(--surface-0)",
-              fontWeight: 600,
-            }}
-          >
-            Create Draft
-          </Link>
+          <RoleGate allow={["policy_author", "platform_admin"]}>
+            <Link
+              href={`/policies/edit?base=${encodeURIComponent(policy.version)}`}
+              style={{
+                padding: "6px 12px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--border-subtle)",
+                background: "var(--surface-0)",
+                fontWeight: 600,
+              }}
+              className="focus-ring"
+            >
+              Create Draft
+            </Link>
+          </RoleGate>
         </div>
         <div style={{ color: "var(--text-secondary)" }}>{policy.summary}</div>
       </div>
@@ -99,6 +144,7 @@ export function PolicyDetailClient({ version, initialPolicy }: PolicyDetailClien
       <form
         action="/policies/diff"
         method="get"
+        aria-label="Compare policy versions"
         style={{
           border: "1px solid var(--border-subtle)",
           borderRadius: "var(--radius-md)",
@@ -117,6 +163,7 @@ export function PolicyDetailClient({ version, initialPolicy }: PolicyDetailClien
             Compare to
             <select
               name="to"
+              aria-label="Compare to policy version"
               defaultValue={comparisons[0]?.version ?? ""}
               style={{
                 marginLeft: "var(--space-2)",
@@ -143,11 +190,13 @@ export function PolicyDetailClient({ version, initialPolicy }: PolicyDetailClien
               fontWeight: 600,
               cursor: "pointer",
             }}
+            className="focus-ring"
             disabled={comparisons.length === 0}
           >
             Compare
           </button>
         </div>
+        {listError && <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{listError}</div>}
       </form>
 
       <div
