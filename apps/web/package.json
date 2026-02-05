@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "next build",
+    "dist": "rm -rf out .next && pnpm run export",
     "start": "next start"
   },
   "dependencies": {
