@@ -2,6 +2,7 @@ import { err, ok, sendJson } from "../envelope";
 import { loadAuthConfig } from "../config/auth";
 import { createJob, createOrGetJob, getJob } from "../runtime/jobs/store";
 import { enqueue } from "../runtime/jobs/queue";
+import { toJobPublic } from "../runtime/jobs/envelope";
 
 export function mountJobRoutes(router: { get: (path: string, handler: any) => void; post: (path: string, handler: any) => void }): void {
   router.post("/jobs", (req: any, res: any) => {
@@ -32,6 +33,19 @@ export function mountJobRoutes(router: { get: (path: string, handler: any) => vo
       sendJson(res, err("NOT_FOUND", "Job not found"), 404);
       return;
     }
-    sendJson(res, ok({ job }), 200);
+    sendJson(res, ok({ job: toJobPublic(job) }), 200);
+  });
+
+  router.get("/jobs/:id/replay", (req: any, res: any) => {
+    const job = getJob(req.params.id);
+    if (!job) {
+      sendJson(res, err("NOT_FOUND", "Job not found"), 404);
+      return;
+    }
+    if (job.status !== "completed") {
+      sendJson(res, err("BAD_REQUEST", "Job not completed"), 409);
+      return;
+    }
+    sendJson(res, ok({ replay: { job_id: job.id, kind: job.kind, result: job.result ?? null } }), 200);
   });
 }
