@@ -1,25 +1,24 @@
-import type { ToolRuleV1 } from "../policy/types";
-import type { ToolEnforcementDecision } from "./types";
 import type { PostconditionResult } from "./postconditions";
 import { arePostconditionsMet } from "./postconditions";
 
-export function validateToolOutput(
-  rule: ToolRuleV1,
-  postRes?: PostconditionResult,
-): ToolEnforcementDecision {
-  if (rule.postconditions && rule.postconditions.length > 0) {
-    if (!postRes || !arePostconditionsMet(rule.postconditions, postRes)) {
-      return {
-        allowed: false,
-        reason_code: "TOOL_POSTCONDITION_FAILED",
-        rule_decision: rule.decision,
-      };
+export type ValidateToolOutputArgs = {
+  requiredPostconditions?: string[];
+  postRes?: PostconditionResult;
+  successReasonCode: string;
+};
+
+export type ToolOutputValidation = {
+  allowed: boolean;
+  reason_code: string;
+};
+
+export function validateToolOutput(args: ValidateToolOutputArgs): ToolOutputValidation {
+  const required = args.requiredPostconditions;
+  if (required && required.length > 0) {
+    if (!args.postRes || !arePostconditionsMet(required, args.postRes)) {
+      return { allowed: false, reason_code: "TOOL_POSTCONDITION_FAILED" };
     }
   }
 
-  return {
-    allowed: true,
-    reason_code: rule.reason_code,
-    rule_decision: rule.decision,
-  };
+  return { allowed: true, reason_code: args.successReasonCode };
 }

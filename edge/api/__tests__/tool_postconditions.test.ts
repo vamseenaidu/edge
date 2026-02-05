@@ -8,41 +8,43 @@ function test(name: string, run: () => Promise<void> | void) {
   tests.push({ name, run });
 }
 
-const ruleWithPost = {
-  decision: "allow",
-  reason_code: "TOOL_ALLOW_SEARCH",
-  postconditions: ["audit_logged", "result_sanitized"],
-};
-
-const ruleNoPost = {
-  decision: "allow",
-  reason_code: "TOOL_ALLOW_NO_POST",
-};
-
 const res = (labels: string[]): PostconditionResult => ({
   satisfied: new Set(labels),
 });
 
-test("denies when postRes missing", () => {
-  const decision = validateToolOutput(ruleWithPost, undefined);
+test("required postconditions deny when postRes missing", () => {
+  const decision = validateToolOutput({
+    requiredPostconditions: ["audit_logged", "result_sanitized"],
+    successReasonCode: "TOOL_ALLOW_SEARCH",
+  });
   assert.strictEqual(decision.allowed, false);
   assert.strictEqual(decision.reason_code, "TOOL_POSTCONDITION_FAILED");
 });
 
-test("denies when missing one label", () => {
-  const decision = validateToolOutput(ruleWithPost, res(["audit_logged"]));
+test("deny when missing one label", () => {
+  const decision = validateToolOutput({
+    requiredPostconditions: ["audit_logged", "result_sanitized"],
+    postRes: res(["audit_logged"]),
+    successReasonCode: "TOOL_ALLOW_SEARCH",
+  });
   assert.strictEqual(decision.allowed, false);
   assert.strictEqual(decision.reason_code, "TOOL_POSTCONDITION_FAILED");
 });
 
-test("allows when all satisfied", () => {
-  const decision = validateToolOutput(ruleWithPost, res(["audit_logged", "result_sanitized"]));
+test("allow when all satisfied", () => {
+  const decision = validateToolOutput({
+    requiredPostconditions: ["audit_logged", "result_sanitized"],
+    postRes: res(["audit_logged", "result_sanitized"]),
+    successReasonCode: "TOOL_ALLOW_SEARCH",
+  });
   assert.strictEqual(decision.allowed, true);
   assert.strictEqual(decision.reason_code, "TOOL_ALLOW_SEARCH");
 });
 
-test("rule without postconditions always allows", () => {
-  const decision = validateToolOutput(ruleNoPost, res(["audit_logged"]));
+test("no required postconditions always allow", () => {
+  const decision = validateToolOutput({
+    successReasonCode: "TOOL_ALLOW_NO_POST",
+  });
   assert.strictEqual(decision.allowed, true);
   assert.strictEqual(decision.reason_code, "TOOL_ALLOW_NO_POST");
 });
