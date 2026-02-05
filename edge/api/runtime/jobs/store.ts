@@ -33,6 +33,36 @@ export function getJob(id: string): JobRecord | null {
   return jobs.get(id) ?? null;
 }
 
+const canStart = (status: JobStatus): boolean => status === "queued";
+const canComplete = (status: JobStatus): boolean => status === "running" || status === "queued";
+const canFail = (status: JobStatus): boolean => status === "running" || status === "queued";
+
+export function startJob(id: string): JobRecord | null {
+  const current = jobs.get(id);
+  if (!current || !canStart(current.status)) return null;
+  const updated: JobRecord = { ...current, status: "running" };
+  jobs.set(id, updated);
+  return updated;
+}
+
+export function completeJob(id: string, result: unknown): JobRecord | null {
+  const current = jobs.get(id);
+  if (!current || !canComplete(current.status)) return null;
+  const updated: JobRecord = { ...current, status: "completed", result };
+  delete (updated as { error?: unknown }).error;
+  jobs.set(id, updated);
+  return updated;
+}
+
+export function failJob(id: string, message: string): JobRecord | null {
+  const current = jobs.get(id);
+  if (!current || !canFail(current.status)) return null;
+  const updated: JobRecord = { ...current, status: "failed", error: { message } };
+  delete (updated as { result?: unknown }).result;
+  jobs.set(id, updated);
+  return updated;
+}
+
 export function setJobStatus(
   id: string,
   status: JobStatus,
