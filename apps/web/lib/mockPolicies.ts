@@ -68,10 +68,22 @@ rules:
   },
 ];
 
+const comparePolicies = (a: MockPolicy, b: MockPolicy) => a.version.localeCompare(b.version);
+
 export function listPolicies(): MockPolicy[] {
-  return policies;
+  return [...policies].sort(comparePolicies);
 }
 
 export function getPolicy(version: string): MockPolicy | null {
   return policies.find((policy) => policy.version === version) ?? null;
+}
+
+export function hasPolicy(version: string): boolean {
+  return policies.some((policy) => policy.version === version);
+}
+
+export function addPolicy(policy: MockPolicy): void {
+  if (hasPolicy(policy.version)) return;
+  policies.push(policy);
+  policies.sort(comparePolicies);
 }
