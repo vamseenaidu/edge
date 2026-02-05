@@ -5,6 +5,7 @@ import { toErrEnvelope } from "../http_errors";
 import { createAuthMiddleware } from "../middleware/auth_mw";
 import { createTenantMiddleware } from "../middleware/tenant_mw";
 import { loadAuthConfig } from "../config/auth";
+import { createSecurityHeadersMiddleware } from "../middleware/security_headers";
 
 export type CreateServerOptions = {
   router?: Router;
@@ -16,6 +17,7 @@ export type CreateServerOptions = {
 export function createServer(options: CreateServerOptions = {}): express.Express {
   const app = express();
   app.use(express.json({ limit: options.jsonLimit ?? "1mb" }));
+  app.use(createSecurityHeadersMiddleware());
 
   const authMiddleware = options.authMiddleware ?? createAuthMiddleware(loadAuthConfig());
   app.use(authMiddleware);

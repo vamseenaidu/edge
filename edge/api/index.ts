@@ -1,7 +1,18 @@
 import { loadRuntimeConfig } from "./runtime/configService";
 import { startServer, stopServer } from "./runtime/serverLifecycle";
+import { assertAuthConfigSafe } from "./runtime/security_guards";
 
 function main(): void {
+  try {
+    assertAuthConfigSafe(process.env);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "EDGE_AUTH_MISCONFIG: unsafe auth configuration";
+    // eslint-disable-next-line no-console
+    console.error(message);
+    process.exit(1);
+    return;
+  }
+
   let config;
   try {
     config = loadRuntimeConfig();
