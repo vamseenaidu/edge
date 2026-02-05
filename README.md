@@ -1,4 +1,4 @@
-# EDGE — Epistemic Discipline & Guardrail Engine
+# EDGE — Epistemic Discipline & Governance Engine
 
 **Deterministic inference-time governance for high-stakes AI systems.**
 
