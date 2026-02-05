@@ -1,116 +1,103 @@
-# CGE API
+# EDGE — Epistemic Discipline & Guardrail Engine
 
-## API
-- POST `/v1/ground`: Decision endpoint for governance evaluation. Body includes `query`, `domain: "medicine"`, and optional `debug` to emit audit metadata.
-- GET `/v1/metrics`: Returns the in-memory metrics snapshot (counters and rates for decisions and debug usage). Metrics are in-memory only and reset on restart.
-- GET `/healthz`: Deterministic liveness `{ ok: true, service: "cge-api", version: "v1.0" }`.
+**Deterministic inference-time governance for high-stakes AI systems.**
 
-## E2.1 Identity & Tenancy (Operator Notes)
-Environment variables:
-- `EDGE_AUTH_ENABLED` (default: `false`)
-- `EDGE_HOST` or `HOST`
-- `EDGE_PORT` or `PORT`
-- `EDGE_SHUTDOWN_TIMEOUT_MS`
-- Optional config file: `EDGE_RUNTIME_CONFIG_FILE` or `EDGE_CONFIG_FILE`
+EDGE is a **pre-generation decision engine** that sits between a prompt and any model output and deterministically decides:
 
-Request headers (identity surface):
-- `x-edge-actor-id`
-- `x-edge-actor-type` (`human`|`service`)
-- `x-edge-auth-provider` (`oidc`|`saml`|`none`)
-- `x-edge-role` (`platform_admin`|`policy_author`|`auditor`|`operator`)
-- `x-edge-tenant-id`
+**PROCEED · ASK_CLARIFY · REFUSE · ESCALATE**
 
-Behavior rules:
-- When `EDGE_AUTH_ENABLED=0`: RBAC is not enforced; attribution `actor`/`role` are `null`; tenant propagates if header present, otherwise `null`.
-- When `EDGE_AUTH_ENABLED=1`: RBAC gates apply to `/api/v1/metrics`, `/api/v1/contract`, `/api/v1/meta`; attribution includes actor/role/tenant as available.
-- Audit attribution fields (when emitted) are under `metadata.attribution = { actor_id, actor_type, auth_provider, role, tenant_id }`.
+before any language is generated.
 
-Deployment profiles:
+EDGE is not a model, not a wrapper, and not post-hoc safety filtering. It is a **control layer** for making AI systems *admissible* in regulated and high-risk environments.
 
-Local dev (auth disabled)
+---
+
+## Why EDGE Exists
+
+Modern LLMs are powerful but unsafe by default in real-world deployments:
+
+- Hallucination under uncertainty
+- Non-reproducibility
+- No audit-grade decision trail
+- Mixed boundaries between advice, execution, and reasoning
+
+Enterprises don’t buy “better answers.” They buy **risk reduction, auditability, and deployment guarantees**.
+
+---
+
+## Core Guarantees (Non-Negotiable)
+
+### 1) Determinism
+Same normalized input + same policy version → **same decision, always**.
+
+### 2) Pre-generation control
+EDGE decides **before** any content is produced. If EDGE refuses, nothing is generated.
+
+### 3) Audit-grade artifacts
+A governed decision can emit an audit bundle containing:
+- matched rule IDs
+- ordered evaluation trace
+- final decision state
+- normalized input hash
+- policy version
+- optional attribution (actor / role / tenant)
+
+### 4) Replayability
+A historical decision can be reconstructed deterministically from the same inputs + policy.
+
+---
+
+## Domain Strategy
+
+EDGE ships **governance schemas**, not domain content engines.
+
+- **EDGE-Clinical** — governance-first (no dosing, no medical advice)
+- **EDGE-Finance** — fiduciary risk boundaries (schemas only)
+- **EDGE-Legal** — jurisdiction ambiguity + unauthorized practice prevention (schemas only)
+
+---
+
+## Repo Layout (infra-first)
+
+- `edge/api/` — HTTP surface, middleware, runtime config
+- `edge/core/` — decision kernel (frozen semantics)
+- `edge/audit/` — audit helpers + fingerprinting primitives
+- `edge/vignettes/` — frozen governance vignette suites (FGVS)
+- `ops/` — docker/k8s/systemd deployment assets
+- `scripts/` — determinism checks, smoke checks, release gates
+- `docs/` — operator, security model, release process
+
+---
+
+## Status
+
+### Release: EDGE 2.1 (tag: `edge-2.1`)
+Identity & tenancy plane:
+- identity surface (actor context)
+- tenant propagation
+- RBAC gates (auth-enabled only)
+- audit attribution (actor/role/tenant)
+- operator deployment profiles
+
+---
+
+## Quickstart (local)
+
 ```bash
-EDGE_AUTH_ENABLED=0
-EDGE_HOST=0.0.0.0
-EDGE_PORT=3000
-EDGE_SHUTDOWN_TIMEOUT_MS=10000
+pnpm install
+pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/index.ts
 ```
+
+## Run tests (fast)
+
 ```bash
-curl -s http://localhost:3000/api/v1/health/live
-```
-```bash
-# RBAC behavior check (requires EDGE_AUTH_ENABLED=1)
-curl -i http://localhost:3000/api/v1/contract
-curl -i http://localhost:3000/api/v1/contract -H "x-edge-role: auditor"
+pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/__tests__/auth_middleware.test.ts
 ```
 
-Enterprise pilot (auth enabled, header role required)
-```bash
-EDGE_AUTH_ENABLED=1
-EDGE_HOST=0.0.0.0
-EDGE_PORT=3000
-EDGE_SHUTDOWN_TIMEOUT_MS=10000
-```
-```bash
-curl -s http://localhost:3000/api/v1/health/live
-```
-```bash
-curl -i http://localhost:3000/api/v1/contract
-curl -i http://localhost:3000/api/v1/contract -H "x-edge-role: auditor"
-```
+---
 
-Perimeter-controlled on-prem (auth enabled + tenant headers)
-```bash
-EDGE_AUTH_ENABLED=1
-EDGE_HOST=0.0.0.0
-EDGE_PORT=3000
-EDGE_SHUTDOWN_TIMEOUT_MS=10000
-```
-```bash
-curl -s http://localhost:3000/api/v1/health/live
-```
-```bash
-curl -i http://localhost:3000/api/v1/contract -H "x-edge-tenant-id: tenant-9"
-curl -i http://localhost:3000/api/v1/contract -H "x-edge-tenant-id: tenant-9" -H "x-edge-role: auditor"
-```
+## Philosophy
 
-## Demo + UI
-- `pnpm demo` runs the leadership preset and writes artifacts to `runs/demo`.
-- `pnpm demo:debug` includes audit data in responses.
-- The summary JSON is saved at `runs/demo/demo.summary.json`.
-- Run `pnpm dev` then open `http://localhost:3000/`. Paste a query (or load an example) and click **Run CGE**. Toggle **Debug (include audit)** to include the audit section in responses.
+Models generate text.
 
-## Local
-- Install deps: `pnpm install`
-- Build: `pnpm build`
-- Start (compiled): `pnpm start` then `curl -s http://localhost:3000/healthz`
-- Dev (ts-node + nodemon): `pnpm dev`
-
-## Docker
-- Build: `docker build -t cge-api .`
-- Run: `docker run --rm -p 3000:3000 cge-api`
-- Verify: `curl -s http://localhost:3000/healthz`
-
-## Fly.io
-- Login: `fly auth login`
-- Launch (first time): `fly launch --no-deploy --name cge-api-powstik --region iad`
-- Deploy: `fly deploy`
-- Status: `fly status`
-- Verify (replace app URL if different):
-  - `curl -s https://cge-api-powstik.fly.dev/healthz`
-  - `curl -s -X POST https://cge-api-powstik.fly.dev/v1/ground -H "Content-Type: application/json" -d '{"query":"52M chest pain with sweating","domain":"medicine"}'`
-  - `curl -s https://cge-api-powstik.fly.dev/`
-
-## Examples
-- No debug:
-  - `curl -s -X POST http://localhost:3000/v1/ground -H "Content-Type: application/json" -d '{"query":"52M chest pain with sweating","domain":"medicine"}' | jq`
-- With debug:
-  - `curl -s -X POST http://localhost:3000/v1/ground -H "Content-Type: application/json" -d '{"query":"52M chest pain with sweating","domain":"medicine","debug":true}' | jq`
-
-## Release
-- CGE API v1.0 — YC-ready
-- Suggested tag (not executed): `git tag -a cge-v1.0-yc -m "YC-ready deploy"`
-
-## UI
-- Run `pnpm dev` then open `http://localhost:3000/`.
-- Paste a query (or load an example) and click **Run CGE**.
-- Toggle **Debug (include audit)** to include the audit section in responses.
+EDGE decides **whether they are allowed to speak**.
