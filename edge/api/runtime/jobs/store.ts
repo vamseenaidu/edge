@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import type { JobKind, JobRecord, JobStatus } from "./types";
 
 const jobs = new Map<string, JobRecord>();
+const idempotencyIndex = new Map<string, string>();
 
 const createJobId = (): string => {
   if (typeof randomUUID === "function") {
@@ -12,8 +13,15 @@ const createJobId = (): string => {
 
 type CreateJobInput = {
   kind: JobKind;
+  payload?: unknown;
   tenant_id?: string | null;
   actor_id?: string | null;
+  idempotency_key?: string | null;
+};
+
+const buildIdempotencyIndexKey = (key: string, tenant_id?: string | null): string => {
+  const tenantScope = tenant_id ?? "__global__";
+  return `${tenantScope}::${key}`;
 };
 
 export function createJob(input: CreateJobInput): JobRecord {
@@ -22,15 +30,37 @@ export function createJob(input: CreateJobInput): JobRecord {
     id,
     kind: input.kind,
     status: "queued",
+    payload: input.payload ?? null,
     tenant_id: input.tenant_id ?? null,
     actor_id: input.actor_id ?? null,
+    idempotency_key: input.idempotency_key ?? null,
   };
   jobs.set(id, record);
+  if (record.idempotency_key) {
+    const indexKey = buildIdempotencyIndexKey(record.idempotency_key, record.tenant_id);
+    idempotencyIndex.set(indexKey, id);
+  }
   return record;
 }
 
 export function getJob(id: string): JobRecord | null {
   return jobs.get(id) ?? null;
+}
+
+export function getJobByIdempotencyKey(key: string, tenant_id?: string | null): JobRecord | null {
+  const indexKey = buildIdempotencyIndexKey(key, tenant_id ?? null);
+  const jobId = idempotencyIndex.get(indexKey);
+  if (!jobId) return null;
+  return jobs.get(jobId) ?? null;
+}
+
+export function createOrGetJob(input: CreateJobInput): JobRecord {
+  const key = input.idempotency_key ?? null;
+  if (key) {
+    const existing = getJobByIdempotencyKey(key, input.tenant_id ?? null);
+    if (existing) return existing;
+  }
+  return createJob(input);
 }
 
 const canStart = (status: JobStatus): boolean => status === "queued";

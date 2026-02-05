@@ -20,3 +20,23 @@ export function processNextJob(deps: { store: JobStore; queue: JobQueue } = { st
 
   return deps.store.completeJob(jobId, { accepted: true });
 }
+
+export function processAll(options: { max?: number } = {}): JobRecord[] {
+  const limit = options.max ?? Number.POSITIVE_INFINITY;
+  const results: JobRecord[] = [];
+  let processed = 0;
+
+  while (processed < limit) {
+    const jobId = dequeue();
+    if (!jobId) break;
+    processed += 1;
+
+    const running = startJob(jobId);
+    if (!running) continue;
+
+    const completed = completeJob(jobId, { accepted: true });
+    if (completed) results.push(completed);
+  }
+
+  return results;
+}

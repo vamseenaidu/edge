@@ -1,21 +1,29 @@
 import { err, ok, sendJson } from "../envelope";
-import { createJob, getJob, setJobStatus } from "../runtime/jobs/store";
+import { loadAuthConfig } from "../config/auth";
+import { createJob, createOrGetJob, getJob } from "../runtime/jobs/store";
+import { enqueue } from "../runtime/jobs/queue";
 
 export function mountJobRoutes(router: { get: (path: string, handler: any) => void; post: (path: string, handler: any) => void }): void {
   router.post("/jobs", (req: any, res: any) => {
-    const body = req?.body as { kind?: string; payload?: unknown } | undefined;
+    const body = req?.body as { kind?: string; payload?: unknown; idempotency_key?: string } | undefined;
     if (!body || body.kind !== "eval_run") {
       sendJson(res, err("BAD_REQUEST", "Invalid job request"), 400);
       return;
     }
 
     const tenant_id = req?.edge_tenant_id ?? null;
-    const actor_id = req?.edge_actor?.actor_id ?? null;
+    const authEnabled = loadAuthConfig().enabled;
+    const actor_id = authEnabled ? req?.edge_actor?.actor_id ?? null : null;
 
-    const job = createJob({ kind: "eval_run", tenant_id, actor_id });
-    const completed = setJobStatus(job.id, "completed", { accepted: true });
+    const job = body.idempotency_key
+      ? createOrGetJob({ kind: "eval_run", payload: body.payload, tenant_id, actor_id, idempotency_key: body.idempotency_key })
+      : createJob({ kind: "eval_run", payload: body.payload, tenant_id, actor_id });
 
-    sendJson(res, ok({ job_id: job.id, status: completed?.status ?? job.status }), 200);
+    if (job.status === "queued") {
+      enqueue(job.id);
+    }
+
+    sendJson(res, ok({ job_id: job.id, status: job.status }), 200);
   });
 
   router.get("/jobs/:id", (req: any, res: any) => {
