@@ -3,11 +3,13 @@ import { err, ok, sendJson } from "../envelope";
 import { requireRole } from "../middleware/rbac_mw";
 import type { RoleRequirement } from "../auth/rbac";
 import { mountHealthRoutes } from "./routes_health";
+import { mountJobRoutes } from "./routes_jobs";
 
 export function createV1Router(): express.Router {
   const router = express.Router();
 
   mountHealthRoutes(router);
+  mountJobRoutes(router);
 
   const opsAuditAdmin: RoleRequirement = { anyOf: ["operator", "auditor", "platform_admin"] };
   const auditAdmin: RoleRequirement = { anyOf: ["auditor", "platform_admin"] };
