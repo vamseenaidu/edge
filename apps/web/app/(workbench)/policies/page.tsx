@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { listPolicies } from "../../../lib/mockPolicies";
 import { NotionTable } from "../../../components/NotionTable";
+import { RoleGate } from "../../../components/RolePill";
 
 export default function PoliciesPage() {
   const policies = listPolicies();
@@ -27,18 +28,20 @@ export default function PoliciesPage() {
             Read-only policy versions available for audit review.
           </p>
         </div>
-        <Link
-          href="/policies/edit"
-          style={{
-            padding: "6px 12px",
-            borderRadius: "var(--radius-sm)",
-            border: "1px solid var(--border-subtle)",
-            background: "var(--surface-0)",
-            fontWeight: 600,
-          }}
-        >
-          New Draft
-        </Link>
+        <RoleGate allow={["policy_author", "platform_admin"]}>
+          <Link
+            href="/policies/edit"
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--surface-0)",
+              fontWeight: 600,
+            }}
+          >
+            New Draft
+          </Link>
+        </RoleGate>
       </div>
 
       <NotionTable columns={["Version", "Summary", "View"]} rows={rows} emptyLabel="No policy versions available" />

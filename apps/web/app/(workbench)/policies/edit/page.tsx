@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { getRole, type EdgeRole } from "../../../../lib/rbac";
 import { addPolicy, getPolicy, hasPolicy, listPolicies } from "../../../../lib/mockPolicies";
 import { validatePolicyDraft, ValidationResult } from "../../../../lib/policyValidator";
 import { InlineStatus } from "../../../../components/InlineStatus";
@@ -11,6 +12,7 @@ function PolicyEditContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const policies = listPolicies();
+  const [role, setRoleState] = useState<EdgeRole>("auditor");
   const baseFromQuery = searchParams.get("base");
   const initialBase = baseFromQuery && hasPolicy(baseFromQuery) ? baseFromQuery : policies[0]?.version ?? "";
 
@@ -25,6 +27,10 @@ function PolicyEditContent() {
       setBaseVersion(baseFromQuery);
     }
   }, [baseFromQuery, baseVersion]);
+
+  useEffect(() => {
+    setRoleState(getRole());
+  }, []);
 
   useEffect(() => {
     const basePolicy = getPolicy(baseVersion);
@@ -59,6 +65,32 @@ function PolicyEditContent() {
   };
 
   const canPublish = Boolean(validation?.ok) && !duplicateVersion;
+  const canEdit = role === "policy_author" || role === "platform_admin";
+
+  if (!canEdit) {
+    return (
+      <div
+        style={{
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-md)",
+          padding: "var(--space-4)",
+          background: "var(--surface-1)",
+          boxShadow: "var(--shadow-soft)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-2)",
+        }}
+      >
+        <div style={{ fontSize: 14, fontWeight: 600 }}>Forbidden</div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+          Your current role does not permit policy editing.
+        </div>
+        <Link href="/policies" style={{ color: "var(--accent)", fontWeight: 600 }}>
+          Back to policies
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>

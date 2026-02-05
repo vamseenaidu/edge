@@ -1,10 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
-
-const navItems = [
-  { label: "Runs", href: "/runs" },
-  { label: "Policies", href: "/policies" },
-];
+import { RoleNav, RolePill } from "../../components/RolePill";
 
 export default function WorkbenchLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,9 +13,7 @@ export default function WorkbenchLayout({ children }: { children: ReactNode }) {
         }}
       >
         <div style={{ fontSize: 20, fontWeight: 600 }}>EDGE Workbench</div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>
-          Auditor Mode
-        </div>
+        <RolePill />
       </div>
 
       <div
@@ -50,22 +43,7 @@ export default function WorkbenchLayout({ children }: { children: ReactNode }) {
           >
             Navigation
           </div>
-          <nav style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                style={{
-                  padding: "8px 10px",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-subtle)",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <RoleNav />
         </aside>
 
         <section style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>{children}</section>
