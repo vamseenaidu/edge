@@ -2,7 +2,7 @@
 **A deterministic pre-generation control plane for high-risk AI systems.**
 EDGE deterministically governs AI behavior *before* output is produced, enforcing policy, safety, and accountability at inference time — not post‑hoc.
 
-## One‑Sentence Definition (What This Is)
+## Definition
 EDGE (Epistemic Discipline Governance Engine) is a deterministic governance engine that sits in front of AI systems and decides—before any generation or tool execution—whether the action is allowed, blocked, escalated, or requires clarification.
 
 This is not a demo. This is **infrastructure**.
@@ -246,11 +246,16 @@ Deployment docs:
 
 EDGE is infrastructure for teams who cannot afford AI failure:
 
+EDGE is infrastructure for teams who cannot afford AI failure:
+
 - Medical AI platforms
 - Financial decision engines
+- Legal decision support and compliance systems
+- Insurance underwriting and claims automation
 - Defense & intelligence systems
+- Critical infrastructure operations (energy, utilities, transport)
 - Enterprise copilots with liability
-- Safety‑critical automation
+- Government and public-sector AI systems
 
 If “oops” is unacceptable, EDGE is required.
 
