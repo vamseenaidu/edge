@@ -11,6 +11,7 @@ app.use(express.json({ limit: "256kb" }));
 
 // Serve the YC demo UI from /public. Use an absolute path so prod (dist/) works too.
 const publicDir = path.resolve(process.cwd(), "public");
+const demoPagePath = path.join(publicDir, "demo.html");
 app.use(express.static(publicDir));
 
 const cgeVersion = (process.env.CGE_VERSION ?? "v1.0") as "v1.0";
@@ -21,6 +22,9 @@ const healthHandler = (_req: express.Request, res: express.Response) => {
 
 app.get("/healthz", healthHandler);
 app.get("/health", healthHandler);
+app.get("/demo", (_req, res) => {
+  res.sendFile(demoPagePath);
+});
 
 app.use("/v1", routes);
 
