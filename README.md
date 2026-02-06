@@ -1,11 +1,11 @@
-# EDGE — Deterministic AI Governance Infrastructure
-**A deterministic pre-generation control plane for high-risk AI systems.**
-EDGE deterministically governs AI behavior *before* output is produced, enforcing policy, safety, and accountability at inference time — not post‑hoc.
+# EDGE API — Deterministic AI Governance Engine
+**A deterministic inference-time control layer for high-risk AI systems.**
+EDGE makes governance decisions *before* any model output is produced, enforcing policy, safety, and accountability at inference time — not post‑hoc.
 
 ## Definition
-EDGE (Epistemic Discipline Governance Engine) is a deterministic governance engine that sits in front of AI systems and decides—before any generation or tool execution—whether the action is allowed, blocked, escalated, or requires clarification.
+EDGE (Epistemic Discipline Governance Engine) is a deterministic governance engine that sits in front of AI systems and decides—before any generation or tool execution—whether the action may proceed, must be clarified, must be refused, or must be escalated.
 
-This is not a demo. This is **infrastructure**.
+EDGE is governance infrastructure: it **does not generate domain content** and it **does not execute tools**.
 
 ---
 
@@ -33,6 +33,11 @@ EDGE:
 - never executes tools
 - never guesses
 
+Supported domains in this repo (v1.0):
+- `medicine` (EDGE-Clinical)
+- `finance` (EDGE-Finance; decision-only)
+- `legal` (EDGE-Legal; decision-only, conservative)
+
 It deterministically decides whether AI is allowed to act.
 
 ## What EDGE Is (And Is Not)
@@ -49,23 +54,20 @@ It deterministically decides whether AI is allowed to act.
 - A post‑hoc log analyzer
 - A policy suggestion engine
 
-EDGE never executes tools, generates content, or performs domain reasoning.  
+EDGE never executes tools or generates domain content.  
 It **decides whether an AI system is allowed to proceed at all**.
 
 ---
 
 ## Core Architectural Mandate
 
-> **Same normalized input + same policy version → same decision, forever.**
+> **Same input + same domain + same EDGE version → same decision.**
 
-This invariant is enforced across:
-- Identity context (actor, role, tenant)
-- Policy lifecycle (draft → publish → active)
-- Async evaluation jobs
-- Tool governance checks
-- Release upgrades
-
-Violations fail builds.
+This repo enforces determinism via:
+- Contract-bound request/response schemas (fail-closed)
+- A domain router (medicine / finance / legal)
+- Schema-driven, ordered rule evaluation per domain
+- Golden regression tests (decision tables + vignettes)
 
 ---
 
@@ -78,28 +80,20 @@ Every governed request resolves to **exactly one** of:
 - `REFUSE` — Disallowed action
 - `ESCALATE` — Human or higher‑authority review required
 
-No confidence scores.  
-No probabilistic hedging.  
-No narrative justifications.
+No confidence scores.
+No probabilistic hedging.
 
 These four outcomes form a closed, enumerable decision space required for audit, insurance, and legal defensibility.
 
 ---
 
-
 ## Why This Is Technically Hard
 
-EDGE solves problems most AI systems explicitly avoid:
-
-- Deterministic evaluation over probabilistic model outputs
-- Replayable decisions across async job execution
-- Policy versioning without state drift
-- Tool governance without tool execution
-- Audit artifacts that survive legal discovery
-- CI-enforced determinism (golden regression tests)
-
-Most AI systems cannot prove the same decision twice.
-EDGE fails the build if it cannot.
+- Deterministic evaluation over probabilistic model behavior (no “sometimes”)
+- Domain isolation via schema + routing (no cross-domain leakage)
+- Fail-closed contract enforcement (invalid outputs cannot be emitted)
+- Audit artifacts that are replayable and safe to store (hash + preview)
+- Golden regression enforcement (decision tables + vignette sets)
 
 ## Why This Is a Platform (Not a Feature)
 - Determinism must span policy, identity, tooling, and async execution
@@ -107,95 +101,69 @@ EDGE fails the build if it cannot.
 - Governance logic outlives any single model vendor
 - Enables regulated deployment of otherwise unusable AI systems
 
-## Governance Planes (Composable, Enforced)
-
-### 1. **Policy Plane**
-- Versioned, immutable policy artifacts
-- Draft → validate → publish lifecycle
-- Domain‑scoped active policy resolution
-- Deterministic diffing and replay
-
-### 2. **Decision Plane**
-- Pre‑generation gating
-- Zero side‑effects
-- Pure function evaluation
-- Fingerprintable outputs
-
-### 3. **Audit Plane**
-- Structured, replayable artifacts
-- Actor / role / tenant attribution
-- Tool pre‑ and post‑condition traces
-- Determinism‑safe serialization
-
-### 4. **Tool Governance Plane**
-- Default‑deny execution model
-- Preconditions + postconditions
-- No tool execution inside EDGE
-- Enforcement hooks only
-
-### 5. **Async Evaluation Plane**
-- Deterministic job queue
-- Replayable results
-- Golden regression enforcement
-- No background nondeterminism
-
-### 6. **Operator Plane**
-- On‑prem, static Workbench UI
-- Read‑only audit and policy inspection
-- Draft + publish flows with RBAC
-- No production write paths from UI
-
 ---
 
 ## Determinism Guarantees (Hard)
 
-EDGE ships with a **golden regression suite**.
+EDGE ships with deterministic decision tables and smoke tests.
 
-- Snapshots capture canonical outputs
-- Any nondeterministic field is stripped
-- Releases that drift fail CI
-- Determinism is a build artifact, not a promise
+- Same input + same domain + same version → same decision
+- Contract validation is fail-closed
+- Regression is enforced via golden decision tables
 
 Run locally:
 ```bash
-pnpm exec ts-node --transpile-only --project tsconfig.json \
-  edge/api/__tests__/determinism_regression.test.ts
+pnpm install
+pnpm test:decision
+pnpm test:legal
+pnpm test:vignettes
+pnpm test:metrics
+pnpm test:impact
+pnpm test:demo
+pnpm test:demo:landing
 ```
 
-## Run Locally (60 Seconds)
+## Run Locally
 
 ```bash
 pnpm install
-pnpm exec ts-node edge/api/index.ts
+pnpm dev
 ```
 
-Verify readiness:
-
+Health check:
 ```bash
-curl http://localhost:3000/api/v1/health/ready
+curl -s http://localhost:3000/healthz | jq
 ```
 
-Verify determinism:
-
+Decision endpoint:
 ```bash
-pnpm exec ts-node edge/api/__tests__/determinism_regression.test.ts
+curl -s -X POST http://localhost:3000/v1/ground \
+  -H "Content-Type: application/json" \
+  -d '{"query":"52M chest pain with sweating","domain":"medicine"}' | jq
 ```
+
+Demo:
+- Open: `http://localhost:3000/demo`
 
 ---
 
-## Runtime Configuration (CGE API)
+## Runtime Configuration
 
 Environment variables:
 - `CGE_DISABLE_LOG=1` — disables local request logging (recommended in production).
 - `CGE_VERSION` — overrides the version value returned by `/healthz` (does not change decision logic).
 - `PORT` — port for the HTTP server (default `3000`).
 - `HOST` — bind address for the HTTP server (default `0.0.0.0`).
+- `NODE_ENV` — set to `production` for production deployments.
+- `CGE_DISABLE_LOG=1` is recommended unless you explicitly need local request logging.
 
 Artifacts are local-only by default:
 - `runs/requests.v1.jsonl` — request log (hash + preview only).
-- `runs/demo/demo.summary.json` — demo run summary.
-- `runs/demo/latest.edge_clinical_vignette_report.v1.json` — latest vignette impact report.
-- `artifacts/clinical_vignettes.v1.json` — vignette fixtures used by `/v1/vignettes`.
+- `runs/demo/demo.summary.json` — guided demo run summary.
+- `runs/demo/latest.edge_clinical_vignette_report.v1.json` — latest clinical vignette impact report.
+- `artifacts/clinical_vignettes.v1.json` — clinical vignette fixtures.
+- `artifacts/finance_vignettes.v1.json` — finance vignette fixtures.
+- `artifacts/legal_vignettes.v1.json` — legal vignette fixtures.
 
 ## Docker
 
@@ -221,40 +189,18 @@ Safe logging posture:
 
 ## Minimal Runtime Surface
 
-EDGE exposes only what must be governed.
-
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/v1/health/live` | Liveness |
-| `GET /api/v1/health/ready` | Readiness |
-| `POST /api/v1/jobs` | Async evaluation |
-| `GET /api/v1/jobs/:id` | Job result |
-| `GET /api/v1/jobs/:id/replay` | Deterministic replay |
-| `GET /api/v1/policies` | List policies |
-| `GET /api/v1/policies/:version` | Fetch policy |
-| `POST /api/v1/policies/draft` | Draft (admin) |
-| `POST /api/v1/policies/:version/publish` | Publish (admin) |
-| `GET /api/v1/policies/active/:domain` | Resolve active policy |
+| `GET /healthz` | Health (deterministic payload) |
+| `POST /v1/ground` | Deterministic governance decision (domain-bound) |
+| `GET /v1/metrics` | In-memory counters + rates |
+| `GET /v1/vignettes` | Vignette fixtures (sorted) |
+| `GET /v1/reports/latest` | Latest impact report metadata |
+| `GET /v1/reports/latest.json` | Latest impact report JSON |
+| `GET /demo` | Canonical demo landing page |
 
 No hidden endpoints.  
 No dynamic mutation paths.
-
----
-
-## Operator Workbench (On‑Prem)
-
-- Static export (Next.js)
-- Zero backend coupling
-- Air‑gapped deployable
-- Audit‑first UX
-
-The UI is intentionally non‑authoritative. It cannot mutate production state. All writes are gated by policy, role, and server‑side enforcement.
-
-Build:
-```bash
-pnpm -C apps/web build
-pnpm -C apps/web run dist
-```
 
 ---
 
@@ -271,16 +217,9 @@ EDGE is designed to survive:
 - Security reviews
 - Insurance underwriting
 
-Deployment docs:
-- `docs/onprem_deploy.md`
-- `docs/config_matrix.md`
-- `docs/upgrade_guide.md`
-
 ---
 
 ## Who Uses EDGE
-
-EDGE is infrastructure for teams who cannot afford AI failure:
 
 EDGE is infrastructure for teams who cannot afford AI failure:
 
@@ -297,16 +236,19 @@ If “oops” is unacceptable, EDGE is required.
 
 ---
 
-## Release Lineage
+## Enterprise Trust Pack (Docs)
 
-| Tag | Capability |
-|---|---|
-| `edge-2.1` | Identity, tenancy, RBAC, audit attribution |
-| `edge-2.2` | Async jobs + deterministic workers |
-| `edge-2.3` | Tool governance (default deny) |
-| `edge-2.4` | Operator Workbench UI |
-| `edge-2.5` | Determinism hardening + security baseline |
-| `edge-2.6` | Policy registry + real backend wiring |
+This repo includes a documentation-only trust pack:
+- `SPEC_EDGE_CORE_v1.md`
+- `SPEC_EDGE_CLINICAL_v1.md`
+- `SPEC_EDGE_FINANCE_v1.md`
+- `SPEC_EDGE_LEGAL_v1.md`
+- `API_GUARANTEES.md`
+- `SECURITY_NOTES.md`
+- `THREAT_MODEL.md`
+- `LICENSING.md`
+- `PILOT_README.md`
+- `CHANGELOG.md`
 
 ---
 
