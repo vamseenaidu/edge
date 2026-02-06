@@ -1,6 +1,9 @@
 # EDGE (Epistemic Discipline Governance Engine) — Deterministic AI Governance Infrastructure
-**A pre‑generation control plane for high‑risk AI systems.**  
+**A deterministic pre-generation control plane for high-risk AI systems.**
 EDGE deterministically governs AI behavior *before* output is produced, enforcing policy, safety, and accountability at inference time — not post‑hoc.
+
+## One‑Sentence Definition (What This Is)
+EDGE (Epistemic Discipline Governance Engine) is a deterministic governance engine that sits in front of AI systems and decides—before any generation or tool execution—whether the action is allowed, blocked, escalated, or requires clarification.
 
 This is not a demo. This is **infrastructure**.
 
@@ -8,15 +11,13 @@ This is not a demo. This is **infrastructure**.
 
 ## Why EDGE Exists (The Problem YC Cares About)
 
-Modern AI systems fail *quietly*:
-- Safety policies are probabilistic and non‑replayable
-- Audits are narrative, not executable
-- “Alignment” cannot be proven across releases
+- AI safety today is probabilistic and non‑replayable
 - Enterprises cannot certify or insure AI behavior
+- Policy enforcement is post‑hoc and non‑binding
+- Release upgrades silently change behavior
+- Audits cannot be executed or re‑verified
 
-**EDGE exists to make AI decisions deterministic, replayable, and governable — at scale.**
-
-If the same model, same policy, and same normalized input do not yield the same decision every time, the system is *not governable*.
+EDGE exists to turn AI governance from narrative assurance into executable infrastructure.
 
 ---
 
@@ -25,7 +26,7 @@ If the same model, same policy, and same normalized input do not yield the same 
 
 EDGE sits *in front of* an LLM, agent runtime, or tool executor.
 
-**Input → EDGE → {PROCEED | ASK_CLARIFY | REFUSE | ESCALATE} → downstream system**
+**Request → EDGE → {PROCEED | ASK_CLARIFY | REFUSE | ESCALATE} → Model / Agent / Tool Runtime**
 
 EDGE:
 - never generates content
@@ -81,6 +82,8 @@ No confidence scores.
 No probabilistic hedging.  
 No narrative justifications.
 
+These four outcomes form a closed, enumerable decision space required for audit, insurance, and legal defensibility.
+
 ---
 
 
@@ -97,6 +100,12 @@ EDGE solves problems most AI systems explicitly avoid:
 
 Most AI systems cannot prove the same decision twice.
 EDGE fails the build if it cannot.
+
+## Why This Is a Platform (Not a Feature)
+- Determinism must span policy, identity, tooling, and async execution
+- Single‑point enforcement replaces dozens of fragile checks
+- Governance logic outlives any single model vendor
+- Enables regulated deployment of otherwise unusable AI systems
 
 ## Governance Planes (Composable, Enforced)
 
@@ -203,6 +212,8 @@ No dynamic mutation paths.
 - Air‑gapped deployable
 - Audit‑first UX
 
+The UI is intentionally non‑authoritative. It cannot mutate production state. All writes are gated by policy, role, and server‑side enforcement.
+
 Build:
 ```bash
 pnpm -C apps/web build
@@ -258,11 +269,10 @@ If “oops” is unacceptable, EDGE is required.
 
 ---
 
-## Final Note
+## Mandate
 
-EDGE is intentionally narrow.
+EDGE exists to make AI systems certifiable.
 
-It does one thing:
-> **Make AI behavior governable.**
+If an AI system cannot prove what it would do, given the same input and policy, it cannot be trusted in regulated or high‑liability environments.
 
-Everything else is someone else’s problem — by design.
+EDGE enforces that proof—by construction.
