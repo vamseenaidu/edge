@@ -1,4 +1,4 @@
-# EDGE — Deterministic AI Governance Infrastructure
+# EDGE (Epistemic Discipline Governance Engine) — Deterministic AI Governance Infrastructure
 **A pre‑generation control plane for high‑risk AI systems.**  
 EDGE deterministically governs AI behavior *before* output is produced, enforcing policy, safety, and accountability at inference time — not post‑hoc.
 
