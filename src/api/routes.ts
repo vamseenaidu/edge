@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { groundResponseSchema } from "./contract";
 import { validateGroundRequest } from "./middleware";
-import { ground } from "../core/engine";
+import { getVignettes } from "./vignettes";
+import { latestReportRelativePath, readLatestReport } from "./reports";
+import { groundByDomain } from "../core/domainRouter";
 import * as metrics from "../core/metrics";
 import {
   RequestLogRecord,
@@ -21,7 +23,7 @@ router.post("/ground", validateGroundRequest, async (req, res) => {
     return res.status(500).json({ error: "INTERNAL_CONTRACT_VIOLATION" });
   }
 
-  const result = ground(request);
+  const result = groundByDomain(request);
 
   // Fail-closed: if our internal engine ever violates the response contract,
   // do NOT leak partial/unstable output.
@@ -37,7 +39,7 @@ router.post("/ground", validateGroundRequest, async (req, res) => {
     run_id: getRunId(),
     ts: new Date().toISOString(),
     request: {
-      domain: "medicine",
+      domain: request.domain,
       debug,
       query_sha256: makeQueryHash(request.query),
       query_preview: makeQueryPreview(request.query),
@@ -69,6 +71,46 @@ router.post("/ground", validateGroundRequest, async (req, res) => {
 
 router.get("/metrics", (_req, res) => {
   return res.json(metrics.snapshot());
+});
+
+router.get("/vignettes", async (_req, res) => {
+  try {
+    const vignettes = await getVignettes();
+    return res.json(vignettes);
+  } catch (err: unknown) {
+    const name = (err as { name?: string })?.name ?? "";
+    if (name === "VIGNETTES_NOT_FOUND") {
+      return res.status(500).json({ ok: false, error: "VIGNETTES_NOT_FOUND" });
+    }
+    return res.status(500).json({ ok: false, error: "VIGNETTES_UNAVAILABLE" });
+  }
+});
+
+router.get("/reports/latest", async (_req, res) => {
+  try {
+    const latest = await readLatestReport();
+    return res.status(200).json(latest);
+  } catch (err) {
+    console.error("REPORTS_LATEST_FAILED", err);
+    return res.status(500).json({ ok: false, error: "REPORT_UNAVAILABLE" });
+  }
+});
+
+router.get("/reports/latest.json", async (_req, res) => {
+  try {
+    const latest = await readLatestReport();
+    if (!latest.ok || !latest.report) {
+      return res.status(404).json({ ok: false, error: "REPORT_NOT_FOUND" });
+    }
+    return res.json(latest.report);
+  } catch (err) {
+    console.error("REPORTS_LATEST_JSON_FAILED", err);
+    return res.status(500).json({
+      ok: false,
+      error: "REPORT_UNAVAILABLE",
+      path: latestReportRelativePath,
+    });
+  }
 });
 
 // Debug audit example (not executed here):

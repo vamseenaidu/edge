@@ -21,7 +21,7 @@ export const auditSchema = z
 
 export const groundRequestSchema = z.object({
   query: z.string().min(1, "query must be a non-empty string"),
-  domain: z.literal("medicine"),
+  domain: z.union([z.literal("medicine"), z.literal("finance"), z.literal("legal")]),
   debug: z.boolean().optional().default(false),
 });
 

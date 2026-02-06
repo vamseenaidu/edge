@@ -6,6 +6,11 @@ const exampleDosing = document.getElementById("example-dosing");
 const requestPreview = document.getElementById("request-preview");
 const responseOutput = document.getElementById("response-output");
 const statusLine = document.getElementById("status-line");
+const impactPrevented = document.getElementById("impact-prevented");
+const impactRatio = document.getElementById("impact-ratio");
+const impactDenominator = document.getElementById("impact-denominator");
+const impactNumerator = document.getElementById("impact-numerator");
+const impactStatus = document.getElementById("impact-status");
 
 const examples = {
   chest: "Patient reports chest pain, sweating, and shortness of breath during light activity.",
@@ -27,6 +32,66 @@ function updateRequestPreview() {
 
 function setStatus(message) {
   statusLine.textContent = `Status: ${message}`;
+}
+
+function setImpactStatus(message) {
+  if (impactStatus) {
+    impactStatus.textContent = message;
+  }
+}
+
+function formatPercent(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "--";
+  }
+  return `${(value * 100).toFixed(2)}%`;
+}
+
+async function loadImpact() {
+  if (!impactPrevented || !impactRatio || !impactDenominator || !impactNumerator || !impactStatus) {
+    return;
+  }
+
+  setImpactStatus("Impact report: loading...");
+
+  try {
+    const res = await fetch("/v1/reports/latest");
+    const json = await res.json().catch(() => null);
+    if (!json || typeof json !== "object" || typeof json.ok !== "boolean") {
+      setImpactStatus("Impact report: unavailable");
+      return;
+    }
+
+    if (json.ok !== true || !json.report) {
+      setImpactStatus("Impact report: not found (run impact evaluation).");
+      return;
+    }
+
+    const report = json.report;
+    const impact = report?.impact ?? {};
+    const pct = impact.unsafe_outputs_prevented_pct;
+    const numerator = impact.unsafe_outputs_prevented_numerator;
+    const denominator = impact.unsafe_outputs_prevented_denominator;
+
+    impactPrevented.textContent = formatPercent(pct);
+    impactRatio.textContent =
+      typeof numerator === "number" && typeof denominator === "number"
+        ? `${numerator} / ${denominator}`
+        : "--";
+    impactDenominator.textContent =
+      typeof denominator === "number" ? `${denominator}` : "--";
+    impactNumerator.textContent =
+      typeof numerator === "number" ? `${numerator}` : "--";
+
+    const generatedAt = report.generated_at ?? report.generatedAt;
+    if (typeof generatedAt === "string" && generatedAt.length > 0) {
+      setImpactStatus(`Impact report: ${generatedAt}`);
+    } else {
+      setImpactStatus("Impact report: loaded");
+    }
+  } catch (err) {
+    setImpactStatus("Impact report: load failed.");
+  }
 }
 
 function loadExample(type) {
@@ -92,3 +157,4 @@ queryInput.addEventListener("input", updateRequestPreview);
 
 // Initialize with the chest pain example for quick demo.
 loadExample("chest");
+loadImpact();

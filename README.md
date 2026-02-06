@@ -183,6 +183,42 @@ pnpm exec ts-node edge/api/__tests__/determinism_regression.test.ts
 
 ---
 
+## Runtime Configuration (CGE API)
+
+Environment variables:
+- `CGE_DISABLE_LOG=1` — disables local request logging (recommended in production).
+- `CGE_VERSION` — overrides the version value returned by `/healthz` (does not change decision logic).
+- `PORT` — port for the HTTP server (default `3000`).
+- `HOST` — bind address for the HTTP server (default `0.0.0.0`).
+
+Artifacts are local-only by default:
+- `runs/requests.v1.jsonl` — request log (hash + preview only).
+- `runs/demo/demo.summary.json` — demo run summary.
+- `runs/demo/latest.edge_clinical_vignette_report.v1.json` — latest vignette impact report.
+- `artifacts/clinical_vignettes.v1.json` — vignette fixtures used by `/v1/vignettes`.
+
+## Docker
+
+```bash
+docker build -t cge-api .
+docker run --rm -p 3000:3000 -e HOST=0.0.0.0 -e PORT=3000 cge-api
+```
+
+---
+
+## Ops Notes
+
+Recommended production settings:
+- Set `CGE_DISABLE_LOG=1` unless you explicitly need local request logging.
+- Keep `HOST=0.0.0.0` and run behind a reverse proxy (TLS termination upstream).
+- Pin `CGE_VERSION` to the deployed release identifier for audit trails.
+
+Safe logging posture:
+- Logs are local-only and store `query_sha256` + a short `query_preview`.
+- Full request bodies are never written to disk.
+
+---
+
 ## Minimal Runtime Surface
 
 EDGE exposes only what must be governed.

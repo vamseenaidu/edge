@@ -18,6 +18,7 @@
     "test:vignettes": "ts-node scripts/smokeVignettes.ts",
     "test:metrics": "ts-node scripts/smokeMetrics.ts",
     "test:impact": "ts-node scripts/smokeImpact.ts",
+    "test:legal": "ts-node scripts/smokeLegal.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:edge:e1": "ts-node --project tsconfig.json edge/core/__tests__/determinism.test.ts",
     "test:edge:e2": "ts-node --project tsconfig.json edge/policy/__tests__/rulepack_validation.test.ts",

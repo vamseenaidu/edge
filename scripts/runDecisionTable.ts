@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import path from "path";
-import { ground } from "../src/core/engine";
+import { groundByDomain } from "../src/core/domainRouter";
 import {
   GroundResponse,
   groundRequestSchema,
@@ -17,13 +17,63 @@ type DecisionCase = {
   };
 };
 
+type FinanceCase = {
+  id: string;
+  query: string;
+  expectedDecision: GroundResponse["decision"];
+};
+
+type LegalCase = {
+  id: string;
+  query: string;
+  expectedDecision: GroundResponse["decision"];
+};
+
 const loadCases = (): DecisionCase[] => {
   const filePath = path.join(__dirname, "../tests/decision_table.cge_v1.json");
   const raw = readFileSync(filePath, "utf-8");
   return JSON.parse(raw) as DecisionCase[];
 };
 
+const loadFinanceCases = (): FinanceCase[] => {
+  const filePath = path.join(__dirname, "../artifacts/finance_vignettes.v1.json");
+  const raw = readFileSync(filePath, "utf-8");
+  const parsed = JSON.parse(raw) as {
+    vignettes?: Array<{
+      id: string;
+      prompt: string;
+      expected_edge_decision: GroundResponse["decision"];
+    }>;
+  };
+  const vignettes = Array.isArray(parsed?.vignettes) ? parsed.vignettes : [];
+  return vignettes.map((v) => ({
+    id: v.id,
+    query: v.prompt,
+    expectedDecision: v.expected_edge_decision,
+  }));
+};
+
+const loadLegalCases = (): LegalCase[] => {
+  const filePath = path.join(__dirname, "../artifacts/legal_vignettes.v1.json");
+  const raw = readFileSync(filePath, "utf-8");
+  const parsed = JSON.parse(raw) as {
+    vignettes?: Array<{
+      id: string;
+      prompt: string;
+      expected_edge_decision: GroundResponse["decision"];
+    }>;
+  };
+  const vignettes = Array.isArray(parsed?.vignettes) ? parsed.vignettes : [];
+  return vignettes.map((v) => ({
+    id: v.id,
+    query: v.prompt,
+    expectedDecision: v.expected_edge_decision,
+  }));
+};
+
 const cases = loadCases();
+const financeCases = loadFinanceCases();
+const legalCases = loadLegalCases();
 
 const failures: string[] = [];
 
@@ -36,7 +86,7 @@ cases.forEach((testCase) => {
       domain: "medicine",
     });
 
-    const response = ground(request);
+    const response = groundByDomain(request);
     const validated = groundResponseSchema.parse(response);
 
     metrics.record(validated.decision, { debug: request.debug ?? false });
@@ -68,9 +118,62 @@ cases.forEach((testCase) => {
   }
 });
 
-cases.forEach((testCase) => {
+financeCases.forEach((testCase) => {
+  try {
+    const request = groundRequestSchema.parse({
+      query: testCase.query,
+      domain: "finance",
+    });
+
+    const response = groundByDomain(request);
+    const validated = groundResponseSchema.parse(response);
+
+    metrics.record(validated.decision, { debug: request.debug ?? false });
+
+    if (validated.decision !== testCase.expectedDecision) {
+      failures.push(
+        `${testCase.id}: decision expected ${testCase.expectedDecision} but got ${validated.decision}`
+      );
+    }
+
+    if (validated.audit !== undefined) {
+      failures.push(`${testCase.id}: audit should be absent when debug=false`);
+    }
+  } catch (err) {
+    failures.push(`${testCase.id}: exception ${err instanceof Error ? err.message : "unknown"}`);
+  }
+});
+
+legalCases.forEach((testCase) => {
+  try {
+    const request = groundRequestSchema.parse({
+      query: testCase.query,
+      domain: "legal",
+    });
+
+    const response = groundByDomain(request);
+    const validated = groundResponseSchema.parse(response);
+
+    metrics.record(validated.decision, { debug: request.debug ?? false });
+
+    if (validated.decision !== testCase.expectedDecision) {
+      failures.push(
+        `${testCase.id}: decision expected ${testCase.expectedDecision} but got ${validated.decision}`
+      );
+    }
+
+    if (validated.audit !== undefined) {
+      failures.push(`${testCase.id}: audit should be absent when debug=false`);
+    }
+  } catch (err) {
+    failures.push(`${testCase.id}: exception ${err instanceof Error ? err.message : "unknown"}`);
+  }
+});
+
+[...cases, ...financeCases, ...legalCases].forEach((testCase) => {
   const status = failures.some((f) => f.startsWith(`${testCase.id}:`)) ? "FAIL" : "PASS";
-  console.log(`${status} ${testCase.id} - ${testCase.query}`);
+  const query = "query" in testCase ? testCase.query : "";
+  console.log(`${status} ${testCase.id} - ${query}`);
 });
 
 const auditDecisionPath = [
@@ -106,7 +209,7 @@ auditCases.forEach((testCase) => {
       debug: true,
     });
 
-    const response = ground(request);
+    const response = groundByDomain(request);
     const validated = groundResponseSchema.parse(response);
 
     metrics.record(validated.decision, { debug: request.debug ?? false });
@@ -143,9 +246,13 @@ auditCases.forEach((testCase) => {
   }
 });
 
-const expectedDecisionCounts = [...cases, ...auditCases].reduce(
+const expectedDecisionCounts = [...cases, ...financeCases, ...legalCases, ...auditCases].reduce(
   (acc, testCase) => {
-    acc[testCase.expect.decision] += 1;
+    if ("expect" in testCase) {
+      acc[testCase.expect.decision] += 1;
+    } else {
+      acc[testCase.expectedDecision] += 1;
+    }
     return acc;
   },
   {
@@ -158,9 +265,14 @@ const expectedDecisionCounts = [...cases, ...auditCases].reduce(
 
 const metricsSnapshot = metrics.snapshot();
 
-if (metricsSnapshot.total_requests !== cases.length + auditCases.length) {
+if (
+  metricsSnapshot.total_requests !==
+  cases.length + financeCases.length + legalCases.length + auditCases.length
+) {
   failures.push(
-    `metrics: total_requests expected ${cases.length + auditCases.length} but got ${metricsSnapshot.total_requests}`
+    `metrics: total_requests expected ${
+      cases.length + financeCases.length + legalCases.length + auditCases.length
+    } but got ${metricsSnapshot.total_requests}`
   );
 }
 
@@ -178,10 +290,12 @@ if (metricsSnapshot.cge_version !== "v1.0") {
 
 if (
   metricsSnapshot.debug.enabled !== auditCases.length ||
-  metricsSnapshot.debug.disabled !== cases.length
+  metricsSnapshot.debug.disabled !== cases.length + financeCases.length + legalCases.length
 ) {
   failures.push(
-    `metrics: debug counts expected enabled=${auditCases.length} disabled=${cases.length} but got enabled=${metricsSnapshot.debug.enabled} disabled=${metricsSnapshot.debug.disabled}`
+    `metrics: debug counts expected enabled=${auditCases.length} disabled=${
+      cases.length + financeCases.length + legalCases.length
+    } but got enabled=${metricsSnapshot.debug.enabled} disabled=${metricsSnapshot.debug.disabled}`
   );
 }
 

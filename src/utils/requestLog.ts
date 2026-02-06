@@ -7,7 +7,7 @@ export type RequestLogRecord = {
   run_id: string;
   ts: string;
   request: {
-    domain: "medicine";
+    domain: "medicine" | "finance" | "legal";
     debug: boolean;
     query_sha256: string;
     query_preview: string;
