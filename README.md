@@ -9,13 +9,13 @@ This is not a demo. This is **infrastructure**.
 
 ---
 
-## Why EDGE Exists (The Problem YC Cares About)
+## Why EDGE Exists
 
-- AI safety today is probabilistic and non‑replayable
-- Enterprises cannot certify or insure AI behavior
-- Policy enforcement is post‑hoc and non‑binding
-- Release upgrades silently change behavior
-- Audits cannot be executed or re‑verified
+ - AI safety today is probabilistic and non‑replayable
+ - Enterprises cannot certify or insure AI behavior
+ - Policy enforcement is post‑hoc and non‑binding
+ - Release upgrades silently change behavior
+ - Audits cannot be executed or re‑verified
 
 EDGE exists to turn AI governance from narrative assurance into executable infrastructure.
 
