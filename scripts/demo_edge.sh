@@ -53,14 +53,14 @@ resolve_server_signal_pid() {
   echo "${wrapper_pid}"
 }
 
-section "EDGE Terminal Demo Harness"
+section "EDGE Terminal Demo Harness ==========10"
 echo "Repo root: ${ROOT_DIR}"
 echo "Base URL: ${BASE_URL}"
 echo "EDGE_AUTH_ENABLED: ${EDGE_AUTH_ENABLED}"
 echo "DEMO_AUTO: ${DEMO_AUTO}"
 pause_checkpoint 3 "Harness intro"
 
-section "Start API Server"
+section "Start API Server ==========8"
 echo "+ PORT=${PORT} EDGE_AUTH_ENABLED=${EDGE_AUTH_ENABLED} EDGE_DEMO_PROCESS_HOOK=1 pnpm exec ts-node -r ./scripts/demo_process_jobs.ts edge/api/index.ts >${SERVER_LOG} 2>&1 &"
 PORT="${PORT}" EDGE_AUTH_ENABLED="${EDGE_AUTH_ENABLED}" EDGE_DEMO_PROCESS_HOOK=1 pnpm exec ts-node -r ./scripts/demo_process_jobs.ts edge/api/index.ts >"${SERVER_LOG}" 2>&1 &
 SERVER_PID=$!
@@ -70,26 +70,26 @@ echo "Server signal PID: ${SERVER_SIGNAL_PID}"
 echo "Server log: ${SERVER_LOG}"
 pause_checkpoint 3 "Server started"
 
-section "Wait For Readiness"
+section "Wait For Readiness ==========6"
 run wait_ready "${BASE_URL}" 50 0.2 "/health/ready" "/api/v1/health/ready"
 SERVER_SIGNAL_PID="$(resolve_server_signal_pid "${SERVER_PID}")"
 echo "Ready: ${BASE_URL}/health/ready (fallback: ${BASE_URL}/api/v1/health/ready)"
 echo "Resolved server signal PID: ${SERVER_SIGNAL_PID}"
 pause_checkpoint 2 "Readiness OK"
 
-section "Determinism Regression Suite"
+section "Determinism Regression Suite ==========35"
 run pnpm exec ts-node --transpile-only --project tsconfig.json edge/api/__tests__/determinism_regression.test.ts
 pause_checkpoint 6 "Determinism (money shot)"
 
-section "Policies: List"
+section "Policies: List ==========12"
 run curl -sS "${BASE_URL}/api/v1/policies" | clip_json 1200
 pause_checkpoint 3 "Policies list"
 
-section "Policy: edge-clinical.v1.0.0"
+section "Policy: edge-clinical.v1.0.0 ==========18"
 run curl -sS "${BASE_URL}/api/v1/policies/edge-clinical.v1.0.0" | clip_json 1200
 pause_checkpoint 4 "Policy fetch"
 
-section "Create Job"
+section "Create Job ==========12"
 echo "+ curl -sS -X POST ${BASE_URL}/api/v1/jobs -H content-type: application/json -d {\"kind\":\"eval_run\",\"payload\":{\"case\":\"demo\"}}"
 curl -sS -X POST "${BASE_URL}/api/v1/jobs" \
   -H "content-type: application/json" \
@@ -97,7 +97,7 @@ curl -sS -X POST "${BASE_URL}/api/v1/jobs" \
   | tee "${JOB_FILE}" | clip_json 1200
 pause_checkpoint 3 "Job created (queued)"
 
-section "Extract Job ID"
+section "Extract Job ID ==========6"
 JOB_ID="$(
 python3 - <<'PY'
 import json
@@ -107,11 +107,11 @@ PY
 echo "JOB_ID=${JOB_ID}"
 pause_checkpoint 2 "Job ID captured"
 
-section "Process Queued Jobs"
+section "Process Queued Jobs ==========15"
 run env JOB_ID="${JOB_ID}" SERVER_PID="${SERVER_SIGNAL_PID}" BASE_URL="${BASE_URL}" pnpm exec ts-node --transpile-only --project tsconfig.json scripts/demo_process_jobs.ts
 pause_checkpoint 3 "Worker processed queue"
 
-section "Fetch Job"
+section "Fetch Job ==========18"
 echo "+ curl -sS ${BASE_URL}/api/v1/jobs/${JOB_ID}"
 curl -sS "${BASE_URL}/api/v1/jobs/${JOB_ID}" | tee "${JOB_STATUS_FILE}" | clip_json 1200
 JOB_STATUS="$(
@@ -127,7 +127,7 @@ if [[ "${JOB_STATUS}" != "completed" ]]; then
 fi
 pause_checkpoint 3 "Job completed"
 
-section "Replay Job"
+section "Replay Job ==========32"
 echo "+ curl -sS ${BASE_URL}/api/v1/jobs/${JOB_ID}/replay"
 curl -sS "${BASE_URL}/api/v1/jobs/${JOB_ID}/replay" | tee "${REPLAY_FILE}" | clip_json 1200
 REPLAY_KIND="$(
@@ -142,5 +142,5 @@ if [[ "${REPLAY_KIND}" != "edge.ok" ]]; then
 fi
 pause_checkpoint 5 "Replay proof"
 
-section "Demo complete"
+section "Demo complete ==========8"
 pause_checkpoint 2 "End"
