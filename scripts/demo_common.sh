@@ -16,6 +16,17 @@ clip_json() {
   echo
 }
 
+pause_enter() {
+  local prompt="${1:-Press Enter to continue...}"
+  printf "%s" "$prompt"
+  read -r _
+}
+
+pause_seconds() {
+  local seconds="${1:-6}"
+  sleep "$seconds"
+}
+
 wait_ready() {
   local base_url="${1:?base_url is required}"
   local tries="${2:-50}"
