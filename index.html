@@ -164,6 +164,16 @@
         margin-top: 14px;
       }
 
+      .trust-two-col {
+        display: grid;
+        gap: 10px;
+      }
+
+      .trust-col {
+        display: grid;
+        gap: 10px;
+      }
+
       .trust a {
         text-decoration: none;
         border: 1px solid var(--line);
@@ -192,6 +202,11 @@
 
         .two-col {
           grid-template-columns: 1fr 1fr;
+        }
+
+        .trust-two-col {
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
         }
       }
 
@@ -263,82 +278,88 @@
           </article>
         </div>
 
-        <article class="block" id="domains">
-          <h2>Current Domains (v1.0)</h2>
-          <ul>
-            <li>Medicine</li>
-            <li>Finance</li>
-            <li>Legal</li>
-          </ul>
-        </article>
+        <div class="two-col">
+          <article class="block" id="domains">
+            <h2>Current Domains (v1.0)</h2>
+            <ul>
+              <li>Medicine</li>
+              <li>Finance</li>
+              <li>Legal</li>
+            </ul>
+          </article>
 
-        <article class="block" id="determinism">
-          <h2>Determinism by Construction</h2>
-          <ul>
-            <li>Same input + same version → identical decision</li>
-            <li>Version-pinned behavior across releases</li>
-            <li>Structured decision artifacts suitable for audit</li>
-          </ul>
-          <pre class="diagram">Input + Policy Version
+          <article class="block" id="demo-instructions">
+            <h2>Demo Instructions</h2>
+            <pre class="command-block">pnpm install
+pnpm dev
+curl -X POST http://localhost:3000/v1/ground ...</pre>
+            <p class="label">After starting the server, open <code>http://localhost:3000/demo</code> locally.</p>
+          </article>
+        </div>
+
+        <div class="two-col">
+          <article class="block" id="determinism">
+            <h2>Determinism by Construction</h2>
+            <ul>
+              <li>Same input + same version → identical decision</li>
+              <li>Version-pinned behavior across releases</li>
+              <li>Structured decision artifacts suitable for audit</li>
+            </ul>
+            <pre class="diagram">Input + Policy Version
         ↓
 Pure Decision Function
         ↓
 One of Four States</pre>
-        </article>
+          </article>
 
-        <article class="block" id="why-now">
-          <h2>Why Governance Must Precede Scale</h2>
-          <ul>
-            <li>LLM output is probabilistic</li>
-            <li>Prompting steers behavior; it does not authorize it</li>
-            <li>Regulated decisions require enforceable boundaries</li>
-            <li>Authorization must live outside the model</li>
-          </ul>
-        </article>
+          <article class="block" id="why-now">
+            <h2>Why Governance Must Precede Scale</h2>
+            <ul>
+              <li>LLM output is probabilistic</li>
+              <li>Prompting steers behavior; it does not authorize it</li>
+              <li>Regulated decisions require enforceable boundaries</li>
+              <li>Authorization must live outside the model</li>
+            </ul>
+          </article>
+        </div>
 
         <article class="block" id="trust-pack">
           <h2>Technical Documentation</h2>
-          <div class="trust">
-            <a href="./SPEC_EDGE_CORE_v1.md">SPEC_EDGE_CORE_v1.md</a>
-            <a href="./SPEC_EDGE_CLINICAL_v1.md">SPEC_EDGE_CLINICAL_v1.md</a>
-            <a href="./SPEC_EDGE_FINANCE_v1.md">SPEC_EDGE_FINANCE_v1.md</a>
-            <a href="./SPEC_EDGE_LEGAL_v1.md">SPEC_EDGE_LEGAL_v1.md</a>
-            <a href="./API_GUARANTEES.md">API_GUARANTEES.md</a>
-            <a href="./SECURITY_NOTES.md">SECURITY_NOTES.md</a>
-            <a href="./THREAT_MODEL.md">THREAT_MODEL.md</a>
-            <a href="./LICENSING.md">LICENSING.md</a>
-            <a href="./PILOT_README.md">PILOT_README.md</a>
-            <a href="./CHANGELOG.md">CHANGELOG.md</a>
+          <div class="trust trust-two-col">
+            <div class="trust-col">
+              <a href="./SPEC_EDGE_CORE_v1.md">SPEC_EDGE_CORE_v1.md</a>
+              <a href="./SPEC_EDGE_CLINICAL_v1.md">SPEC_EDGE_CLINICAL_v1.md</a>
+              <a href="./SPEC_EDGE_FINANCE_v1.md">SPEC_EDGE_FINANCE_v1.md</a>
+              <a href="./SPEC_EDGE_LEGAL_v1.md">SPEC_EDGE_LEGAL_v1.md</a>
+              <a href="./API_GUARANTEES.md">API_GUARANTEES.md</a>
+            </div>
+            <div class="trust-col">
+              <a href="./SECURITY_NOTES.md">SECURITY_NOTES.md</a>
+              <a href="./THREAT_MODEL.md">THREAT_MODEL.md</a>
+              <a href="./LICENSING.md">LICENSING.md</a>
+              <a href="./PILOT_README.md">PILOT_README.md</a>
+              <a href="./CHANGELOG.md">CHANGELOG.md</a>
+            </div>
           </div>
-        </article>
-
-        <article class="block" id="demo-instructions">
-          <h2>Demo Instructions</h2>
-          <pre class="command-block">pnpm install
-pnpm dev
-curl -X POST http://localhost:3000/v1/ground ...</pre>
-          <p class="label">After starting the server, open <code>http://localhost:3000/demo</code> locally.</p>
         </article>
 
         <article class="block" id="missing-primitive">
           <h2>The Missing Primitive in the AI Stack</h2>
-          <p>AI systems today combine three layers:</p>
-          <ul>
-            <li>Model reasoning</li>
-            <li>Retrieval and context</li>
-            <li>Tool execution</li>
-          </ul>
-          <p>What is absent is a deterministic authorization boundary between intent and execution.</p>
-          <p>Without this boundary, control lives inside a probabilistic system.</p>
-          <p>EDGE introduces that boundary.</p>
-          <p>It does not improve reasoning. It does not filter outputs. It does not modify models.</p>
-          <p>It authorizes whether action may occur at all.</p>
+          <p>
+            AI systems today combine three layers: model reasoning, retrieval and context, and tool
+            execution. What is absent is a deterministic authorization boundary between intent and
+            execution.
+          </p>
+          <p>
+            Without this boundary, control lives inside a probabilistic system. EDGE introduces that
+            boundary. It does not improve reasoning. It does not filter outputs. It does not modify
+            models. It authorizes whether action may occur at all.
+          </p>
           <p>
             In distributed systems, reliability required TCP/IP. In web security, reliability required TLS.
             In enterprise networks, reliability required firewalls.
           </p>
-          <p>AI systems require a deterministic authorization layer.</p>
-          <p>EDGE exists to provide that layer.</p>
+          <p>AI systems require a deterministic authorization layer. EDGE exists to provide that layer.</p>
         </article>
 
         <article class="block" id="who-this-is-for">
