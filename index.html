@@ -213,8 +213,9 @@
       <section class="hero" id="top">
         <h1>EDGE — Authorization Before AI Action</h1>
         <p class="lead">
-          EDGE is a deterministic inference-time authorization layer for AI systems. It acts before model
-          generation and returns exactly one decision state: PROCEED, ASK_CLARIFY, REFUSE, or ESCALATE.
+          EDGE is a deterministic inference-time authorization layer for AI systems. It executes before
+          model generation and returns exactly one of four decision states: PROCEED, ASK_CLARIFY, REFUSE,
+          or ESCALATE.
         </p>
         <p class="subline">Deterministic decisions. Replayable outcomes. Fail-closed enforcement.</p>
         <div class="cta-row">
@@ -227,12 +228,14 @@
 
       <section class="grid" aria-label="EDGE framing and capabilities">
         <article class="block" id="category">
-          <h2>A New Layer in the AI Stack</h2>
+          <h2>A Deterministic Control Layer in the AI Stack</h2>
           <pre class="diagram">Request → EDGE → {PROCEED | ASK_CLARIFY | REFUSE | ESCALATE} → Model / Tool Runtime</pre>
           <ul>
-            <li>EDGE sits between intent and execution.</li>
-            <li>It authorizes actions before model output exists.</li>
-            <li>It is governance infrastructure, not a wrapper.</li>
+            <li>Positioned between intent and execution</li>
+            <li>Authorizes before model output exists</li>
+            <li>Emits one categorical decision state</li>
+            <li>Zero content generation</li>
+            <li>Zero tool execution</li>
           </ul>
         </article>
 
@@ -240,10 +243,10 @@
           <article class="block" id="what-edge-is">
             <h2>What EDGE Is</h2>
             <ul>
-              <li>Deterministic governance kernel</li>
-              <li>Policy-versioned decision engine</li>
-              <li>Audit-grade artifact generator</li>
-              <li>Domain-agnostic enforcement layer</li>
+              <li>A deterministic authorization kernel</li>
+              <li>A policy-versioned decision engine</li>
+              <li>A replayable enforcement boundary</li>
+              <li>A model-agnostic governance layer</li>
             </ul>
           </article>
 
@@ -252,8 +255,8 @@
             <ul>
               <li>Not a chatbot</li>
               <li>Not a prompt optimizer</li>
+              <li>Not a probabilistic guardrail</li>
               <li>Not a content filter</li>
-              <li>Not a model fine-tuning layer</li>
               <li>Does not generate domain content</li>
               <li>Does not execute tools</li>
             </ul>
@@ -261,36 +264,40 @@
         </div>
 
         <article class="block" id="domains">
-          <h2>Supported Domains (Current v1.0)</h2>
+          <h2>Current Domains (v1.0)</h2>
           <ul>
-            <li>Medicine (EDGE-Clinical)</li>
-            <li>Finance (decision-only)</li>
-            <li>Legal (decision-only, conservative)</li>
+            <li>Medicine</li>
+            <li>Finance</li>
+            <li>Legal</li>
           </ul>
         </article>
 
         <article class="block" id="determinism">
-          <h2>Battle-Tested Determinism</h2>
+          <h2>Determinism by Construction</h2>
           <ul>
-            <li>Replayable Decisions — same input + same version → identical decision.</li>
-            <li>Version-Pinned Behavior — policy lifecycle is explicit and immutable.</li>
-            <li>Audit Artifacts — structured, machine-verifiable decision traces.</li>
+            <li>Same input + same version → identical decision</li>
+            <li>Version-pinned behavior across releases</li>
+            <li>Structured decision artifacts suitable for audit</li>
           </ul>
+          <pre class="diagram">Input + Policy Version
+        ↓
+Pure Decision Function
+        ↓
+One of Four States</pre>
         </article>
 
         <article class="block" id="why-now">
-          <h2>Why Now</h2>
+          <h2>Why Governance Must Precede Scale</h2>
           <ul>
-            <li>LLMs are powerful enough to influence regulated decisions.</li>
-            <li>Prompt engineering is probabilistic.</li>
-            <li>Enterprises require enforceable authorization, not steering.</li>
-            <li>Governance must be infrastructure.</li>
+            <li>LLM output is probabilistic</li>
+            <li>Prompting steers behavior; it does not authorize it</li>
+            <li>Regulated decisions require enforceable boundaries</li>
+            <li>Authorization must live outside the model</li>
           </ul>
         </article>
 
         <article class="block" id="trust-pack">
-          <h2>Trust Pack</h2>
-          <p class="label">Repository documentation currently present:</p>
+          <h2>Technical Documentation</h2>
           <div class="trust">
             <a href="./SPEC_EDGE_CORE_v1.md">SPEC_EDGE_CORE_v1.md</a>
             <a href="./SPEC_EDGE_CLINICAL_v1.md">SPEC_EDGE_CLINICAL_v1.md</a>
@@ -312,6 +319,22 @@ pnpm dev
 curl -X POST http://localhost:3000/v1/ground ...</pre>
           <p class="label">After starting the server, open <code>http://localhost:3000/demo</code> locally.</p>
         </article>
+
+        <article class="block" id="who-this-is-for">
+          <h2>For Teams Who Cannot Afford AI Failure</h2>
+          <p>EDGE is built for systems where unpredictability is unacceptable.</p>
+          <ul>
+            <li>Medical decision support</li>
+            <li>Financial authorization and underwriting</li>
+            <li>Legal reasoning and compliance automation</li>
+            <li>Insurance claims and risk engines</li>
+            <li>Enterprise copilots operating in regulated workflows</li>
+          </ul>
+          <p>
+            If model output influences money, medicine, contracts, or regulatory exposure, authorization
+            must precede generation.
+          </p>
+        </article>
       </section>
 
       <footer id="positioning">
@@ -319,7 +342,7 @@ curl -X POST http://localhost:3000/v1/ground ...</pre>
         <p class="fine">Runs on-prem or inside VPC</p>
         <p class="fine">No SaaS dependency</p>
         <p class="fine">No telemetry by default</p>
-        <p class="fine">Vendor-neutral governance layer</p>
+        <p class="fine">Vendor-neutral governance boundary</p>
       </footer>
     </main>
   </body>
