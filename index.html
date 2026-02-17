@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EDGE — Deterministic AI Governance Infrastructure</title>
+    <meta
+      name="description"
+      content="EDGE is a deterministic inference-time authorization layer that governs whether AI systems are allowed to act before generation occurs."
+    />
+    <style>
+      :root {
+        --bg: #f6f6f4;
+        --surface: #ffffff;
+        --line: #d8d8d4;
+        --text: #111111;
+        --muted: #545454;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      body {
+        font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 52px 24px 64px;
+      }
+
+      .hero {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        padding: 52px 48px;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 3.15rem);
+        line-height: 1.15;
+      }
+
+      h2 {
+        font-size: clamp(1.35rem, 3vw, 1.8rem);
+        line-height: 1.25;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead {
+        margin-top: 18px;
+        max-width: 78ch;
+        font-size: 1.08rem;
+      }
+
+      .subline {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .cta {
+        display: inline-block;
+        border: 1px solid var(--text);
+        text-decoration: none;
+        padding: 10px 14px;
+        font-size: 0.92rem;
+        letter-spacing: 0.01em;
+        background: #fff;
+      }
+
+      .cta.secondary {
+        border-color: var(--line);
+      }
+
+      .grid {
+        margin-top: 30px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .block {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        padding: 30px;
+      }
+
+      .block h2 {
+        margin-bottom: 16px;
+      }
+
+      .diagram,
+      .command-block {
+        margin-top: 14px;
+        background: #fbfbfb;
+        border: 1px solid var(--line);
+        padding: 14px;
+        overflow-x: auto;
+        font-family: "IBM Plex Mono", "SFMono-Regular", "Consolas", monospace;
+        font-size: 0.89rem;
+        line-height: 1.45;
+      }
+
+      .diagram,
+      .command-block {
+        margin-bottom: 0;
+        white-space: pre;
+      }
+
+      .label {
+        color: var(--muted);
+        margin-top: 8px;
+      }
+
+      ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+      }
+
+      li {
+        margin: 6px 0;
+      }
+
+      .two-col {
+        display: grid;
+        gap: 16px;
+      }
+
+      .trust {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .trust a {
+        text-decoration: none;
+        border: 1px solid var(--line);
+        background: #fbfbfb;
+        padding: 10px 12px;
+        font-family: "IBM Plex Mono", "SFMono-Regular", "Consolas", monospace;
+        font-size: 0.86rem;
+      }
+
+      footer {
+        margin-top: 30px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        padding: 24px 30px;
+      }
+
+      .fine {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (min-width: 880px) {
+        .grid {
+          gap: 18px;
+        }
+
+        .two-col {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          padding: 26px 14px 36px;
+        }
+
+        .hero,
+        .block,
+        footer {
+          padding: 24px 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero" id="top">
+        <h1>EDGE — Deterministic AI Governance Infrastructure</h1>
+        <p class="lead">
+          EDGE is a deterministic inference-time authorization layer that governs whether AI systems are
+          allowed to act before generation occurs.
+        </p>
+        <p class="subline">Vendor-neutral. Replayable. Fail-closed.</p>
+        <div class="cta-row">
+          <a class="cta" href="https://github.com/vamseenaidu/edge" target="_blank" rel="noopener noreferrer"
+            >View Repository</a
+          >
+          <a class="cta secondary" href="#demo-instructions">Run Local Demo</a>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="EDGE framing and capabilities">
+        <article class="block" id="category">
+          <h2>A New Layer in the AI Stack</h2>
+          <pre class="diagram">Request → EDGE → {PROCEED | ASK_CLARIFY | REFUSE | ESCALATE} → Model / Tool Runtime</pre>
+          <ul>
+            <li>EDGE sits between intent and execution.</li>
+            <li>It authorizes actions before model output exists.</li>
+            <li>It is governance infrastructure, not a wrapper.</li>
+          </ul>
+        </article>
+
+        <div class="two-col">
+          <article class="block" id="what-edge-is">
+            <h2>What EDGE Is</h2>
+            <ul>
+              <li>Deterministic governance kernel</li>
+              <li>Policy-versioned decision engine</li>
+              <li>Audit-grade artifact generator</li>
+              <li>Domain-agnostic enforcement layer</li>
+            </ul>
+          </article>
+
+          <article class="block" id="what-edge-is-not">
+            <h2>What EDGE Is Not</h2>
+            <ul>
+              <li>Not a chatbot</li>
+              <li>Not a prompt optimizer</li>
+              <li>Not a content filter</li>
+              <li>Not a model fine-tuning layer</li>
+              <li>Does not generate domain content</li>
+              <li>Does not execute tools</li>
+            </ul>
+          </article>
+        </div>
+
+        <article class="block" id="domains">
+          <h2>Supported Domains (Current v1.0)</h2>
+          <ul>
+            <li>Medicine (EDGE-Clinical)</li>
+            <li>Finance (decision-only)</li>
+            <li>Legal (decision-only, conservative)</li>
+          </ul>
+        </article>
+
+        <article class="block" id="determinism">
+          <h2>Battle-Tested Determinism</h2>
+          <ul>
+            <li>Replayable Decisions — same input + same version → identical decision.</li>
+            <li>Version-Pinned Behavior — policy lifecycle is explicit and immutable.</li>
+            <li>Audit Artifacts — structured, machine-verifiable decision traces.</li>
+          </ul>
+        </article>
+
+        <article class="block" id="why-now">
+          <h2>Why Now</h2>
+          <ul>
+            <li>LLMs are powerful enough to influence regulated decisions.</li>
+            <li>Prompt engineering is probabilistic.</li>
+            <li>Enterprises require enforceable authorization, not steering.</li>
+            <li>Governance must be infrastructure.</li>
+          </ul>
+        </article>
+
+        <article class="block" id="trust-pack">
+          <h2>Trust Pack</h2>
+          <p class="label">Repository documentation currently present:</p>
+          <div class="trust">
+            <a href="./SPEC_EDGE_CORE_v1.md">SPEC_EDGE_CORE_v1.md</a>
+            <a href="./SPEC_EDGE_CLINICAL_v1.md">SPEC_EDGE_CLINICAL_v1.md</a>
+            <a href="./SPEC_EDGE_FINANCE_v1.md">SPEC_EDGE_FINANCE_v1.md</a>
+            <a href="./SPEC_EDGE_LEGAL_v1.md">SPEC_EDGE_LEGAL_v1.md</a>
+            <a href="./API_GUARANTEES.md">API_GUARANTEES.md</a>
+            <a href="./SECURITY_NOTES.md">SECURITY_NOTES.md</a>
+            <a href="./THREAT_MODEL.md">THREAT_MODEL.md</a>
+            <a href="./LICENSING.md">LICENSING.md</a>
+            <a href="./PILOT_README.md">PILOT_README.md</a>
+            <a href="./CHANGELOG.md">CHANGELOG.md</a>
+          </div>
+        </article>
+
+        <article class="block" id="demo-instructions">
+          <h2>Demo Instructions</h2>
+          <pre class="command-block">pnpm install
+pnpm dev
+curl -X POST http://localhost:3000/v1/ground ...</pre>
+          <p class="label">After starting the server, open <code>http://localhost:3000/demo</code> locally.</p>
+        </article>
+      </section>
+
+      <footer id="positioning">
+        <h2>Enterprise Positioning</h2>
+        <p class="fine">Runs on-prem or inside VPC</p>
+        <p class="fine">No SaaS dependency</p>
+        <p class="fine">No telemetry by default</p>
+        <p class="fine">Vendor-neutral governance layer</p>
+      </footer>
+    </main>
+  </body>
+</html>
