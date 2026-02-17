@@ -320,6 +320,27 @@ curl -X POST http://localhost:3000/v1/ground ...</pre>
           <p class="label">After starting the server, open <code>http://localhost:3000/demo</code> locally.</p>
         </article>
 
+        <article class="block" id="missing-primitive">
+          <h2>The Missing Primitive in the AI Stack</h2>
+          <p>AI systems today combine three layers:</p>
+          <ul>
+            <li>Model reasoning</li>
+            <li>Retrieval and context</li>
+            <li>Tool execution</li>
+          </ul>
+          <p>What is absent is a deterministic authorization boundary between intent and execution.</p>
+          <p>Without this boundary, control lives inside a probabilistic system.</p>
+          <p>EDGE introduces that boundary.</p>
+          <p>It does not improve reasoning. It does not filter outputs. It does not modify models.</p>
+          <p>It authorizes whether action may occur at all.</p>
+          <p>
+            In distributed systems, reliability required TCP/IP. In web security, reliability required TLS.
+            In enterprise networks, reliability required firewalls.
+          </p>
+          <p>AI systems require a deterministic authorization layer.</p>
+          <p>EDGE exists to provide that layer.</p>
+        </article>
+
         <article class="block" id="who-this-is-for">
           <h2>For Teams Who Cannot Afford AI Failure</h2>
           <p>EDGE is built for systems where unpredictability is unacceptable.</p>
